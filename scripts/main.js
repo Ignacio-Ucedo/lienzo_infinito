@@ -25,7 +25,7 @@ class LienzoInfinito {
     }
 
     // ariables paraeventos de mouse
-    this.arrastrandoEnCanvas = false;
+    this.arrastrandoEnCanvas = false; //si estoy arrastrando o no algún elemento del canvas o el canvas mismo
     this.inicioArrastreX = 0;
     this.inicioArrastreY = 0;
     this.tarjetaArrastrada = null;
@@ -34,9 +34,7 @@ class LienzoInfinito {
     this.lienzo.addEventListener("mousedown", this.manejarMouseDown.bind(this));
     this.lienzo.addEventListener("mousemove", this.manejarMouseMove.bind(this));
     this.lienzo.addEventListener("mouseup", this.manejarMouseUp.bind(this));
-    this.lienzo.addEventListener("mouseleave", this.manejarMouseLeave.bind(this));
     this.lienzo.addEventListener("wheel", this.manejarRuedaMouse.bind(this));
-    this.lienzo.addEventListener("mousemove", this.manejarMouseHover.bind(this));
 
   }
 
@@ -165,19 +163,30 @@ class LienzoInfinito {
           this.contexto.restore(); 
         }
         
-          this.contexto.fillStyle = tarjeta.mouseEnZonaTolerante && this.tarjetaArrastrada == null ? "#dff4f5" : "#cbeff1"; // Cambia color de fondo
+        // mouse en zona tolerante
+        this.contexto.fillStyle = tarjeta.mouseEnZonaTolerante && this.tarjetaArrastrada == null ? "#dff4f5" : "#cbeff1"; // Cambia color de fondo
 
         this.rectanguloRedondeado(this.contexto, virtualX, virtualY, tamanoEscalar, tamanoEscalar, 10);
         this.contexto.fill();
 
         // Agregar los puntos en el borde si el mouse está en la zona tolerante
         if (tarjeta.mouseEnZonaTolerante && this.tarjetaArrastrada == null) {
-            const puntoSize = 6;
-            this.contexto.fillStyle = "#40b3f2"; // coolor de los puntos
-            this.contexto.fillRect(virtualX + tamanoEscalar / 2 - puntoSize / 2, virtualY - puntoSize / 2, puntoSize, puntoSize); // Punto arriba
-            this.contexto.fillRect(virtualX + tamanoEscalar - puntoSize / 2, virtualY + tamanoEscalar / 2 - puntoSize / 2, puntoSize, puntoSize); // Punto derecha
-            this.contexto.fillRect(virtualX + tamanoEscalar / 2 - puntoSize / 2, virtualY + tamanoEscalar - puntoSize / 2, puntoSize, puntoSize); // Punto abajo
-            this.contexto.fillRect(virtualX - puntoSize / 2, virtualY + tamanoEscalar / 2 - puntoSize / 2, puntoSize, puntoSize); // Punto izquierda
+          const radio = 3;
+          this.contexto.strokeStyle = "#40b3f2"; // color de las circunferencias
+          this.contexto.lineWidth = 2; // grosor del borde
+
+          this.contexto.beginPath();
+          this.contexto.arc(virtualX + tamanoEscalar / 2, virtualY , radio, 0, Math.PI * 2); // Punto arriba
+          this.contexto.stroke();
+          this.contexto.beginPath();
+          this.contexto.arc(virtualX + tamanoEscalar, virtualY + tamanoEscalar / 2, radio, 0, Math.PI * 2); // Punto derecha
+          this.contexto.stroke();
+          this.contexto.beginPath();
+          this.contexto.arc(virtualX + tamanoEscalar / 2, virtualY + tamanoEscalar , radio, 0, Math.PI * 2); // Punto abajo
+          this.contexto.stroke();
+          this.contexto.beginPath();
+          this.contexto.arc(virtualX , virtualY + tamanoEscalar / 2, radio, 0, Math.PI * 2); // Punto izquierda
+          this.contexto.stroke();
         }
 
         this.contexto.shadowBlur = 0;
@@ -211,38 +220,50 @@ rectanguloRedondeado(ctx, x, y, ancho, alto, radio) {
 
 
   manejarMouseDown(evento) {
-    if (evento.button === 0) {
+    if (evento.button === 0){
+
       if (this.estaEnZonaDeToleranciaTarjetas(evento.clientX, evento.clientY) == null){
         this.arrastrandoEnCanvas= true;
+        this.inicioArrastreX = evento.clientX;
+        this.inicioArrastreY = evento.clientY;
       }
-      this.inicioArrastreX = evento.clientX;
-      this.inicioArrastreY = evento.clientY;
-    }
-
-    const mouseX = evento.clientX;
-    const mouseY = evento.clientY;
-  
-    // si el mouse está sobre una tarjeta
-    for (const tarjeta of this.gestorTarjetas.obtenerTodas()) {
-      const virtualX = this.aVirtualX(tarjeta.x);
-      const virtualY = this.aVirtualY(tarjeta.y);
-      const tamanoEscalar = 100 * this.escala;
-      if (
-        mouseX >= virtualX &&
-        mouseX <= virtualX + tamanoEscalar &&
-        mouseY >= virtualY &&
-        mouseY <= virtualY + tamanoEscalar
-      ) {
-        this.tarjetaArrastrada = tarjeta;
-        break; // se encuentra la tarjeta
+      
+      const mouseX = evento.clientX;
+      const mouseY = evento.clientY;
+      
+      // si el mouse está sobre una tarjeta
+      const todasLasTarjetas = this.gestorTarjetas.obtenerTodas();
+      for (let i = todasLasTarjetas.length - 1; i >= 0; i--) { //for invertido debido a la prioridad de la tarjetas "de más arriba" en el dibujo
+        const tarjeta = todasLasTarjetas[i];
+        const virtualX = this.aVirtualX(tarjeta.x);
+        const virtualY = this.aVirtualY(tarjeta.y);
+        const tamanoEscalar = tarjeta.tamanoOriginal * this.escala;
+        const tarjetaZonaDeToleranciaEnMouse = this.estaEnZonaDeToleranciaTarjetas(mouseX, mouseY);
+        if (tarjetaZonaDeToleranciaEnMouse == null || todasLasTarjetas.indexOf(tarjetaZonaDeToleranciaEnMouse) < todasLasTarjetas.indexOf(tarjeta) ){
+          if (
+            mouseX >= virtualX &&
+            mouseX <= virtualX + tamanoEscalar &&
+            mouseY >= virtualY &&
+            mouseY <= virtualY + tamanoEscalar
+          ) {
+          this.tarjetaArrastrada = tarjeta;
+          this.gestorTarjetas.acomodarTarjetaAlFinal(tarjeta);
+          this.inicioArrastreX = mouseX;
+          this.inicioArrastreY = mouseY;
+          this.dibujar();
+          break;
+          }
+        }
       }
     }
+    
   }
 
   manejarMouseMove(evento) {
   
+    //arrastres
     if (this.tarjetaArrastrada != null) {
-      // Si está sobre una tarjeta, mover la tarjeta en lugar de mover el lienzo
+      // si tieen clickada una tarjetaa, mover la tarjeta en lugar de mover el lienzo
       const deltaX = evento.clientX - this.inicioArrastreX;
       const deltaY = evento.clientY - this.inicioArrastreY;
   
@@ -256,9 +277,8 @@ rectanguloRedondeado(ctx, x, y, ancho, alto, radio) {
       //this.dibujar();
       this.dibujarTarjetas();
     } else if (this.arrastrandoEnCanvas) {
+      //cuando estoy arrastrando el canvas
 
-      // Si no está sobre arrastrando una tarjeta ni moviendose por 
-      // la zona de tolerancia de ninguna, se está arrastrando por el lienzo
       const deltaX = evento.clientX - this.inicioArrastreX;
       const deltaY = evento.clientY - this.inicioArrastreY;
       this.desplazamientoX += deltaX / this.escala;
@@ -267,6 +287,10 @@ rectanguloRedondeado(ctx, x, y, ancho, alto, radio) {
       this.inicioArrastreY = evento.clientY;
       this.dibujar();
     }
+
+    //hovers
+    this.manejarMouseHover(evento);
+
   }
   
   manejarMouseUp(evento) {
@@ -278,12 +302,6 @@ rectanguloRedondeado(ctx, x, y, ancho, alto, radio) {
     }
   }
 
-  manejarMouseLeave(evento) {
-    if (this.arrastrandoEnCanvas) {
-      this.arrastrandoEnCanvas = false;
-    }
-
-  }
   manejarRuedaMouse(evento) {
     //  dirección de la rueda
     const direccion = evento.deltaY > 0 ? -1 : 1;
@@ -296,62 +314,67 @@ rectanguloRedondeado(ctx, x, y, ancho, alto, radio) {
     const mouseX = evento.clientX;
     const mouseY = evento.clientY;
 
-    // el mouse está sobre una tarjeta 
-    let tarjetaSobre = null;
-    for (const tarjeta of this.gestorTarjetas.obtenerTodas()) {
-        const virtualX = this.aVirtualX(tarjeta.x);
-        const virtualY = this.aVirtualY(tarjeta.y);
-        const tamanoEscalar = tarjeta.tamanoOriginal * this.escala;
-        if (
-            mouseX >= virtualX &&
-            mouseX <= virtualX + tamanoEscalar &&
-            mouseY >= virtualY &&
-            mouseY <= virtualY + tamanoEscalar
-        ) {
-            tarjetaSobre = tarjeta;
-            break; // corto cuando encuentra 
-        }
+    const todasLasTarjetas = this.gestorTarjetas.obtenerTodas();
+    let tarjetaDebajoDeMouse = null;
+    let tarjetaZonaDeToleranciaEnMouse= null;
+    for (let i = todasLasTarjetas.length - 1; i >= 0; i--) { //for invertido debido a la prioridad de la tarjetas "de más arriba" en el dibujo
+      const tarjeta = todasLasTarjetas[i];
+      const virtualX = this.aVirtualX(tarjeta.x);
+      const virtualY = this.aVirtualY(tarjeta.y);
+      const tamanoEscalar = tarjeta.tamanoOriginal * this.escala;
+      if (
+        mouseX >= virtualX &&
+        mouseX <= virtualX + tamanoEscalar &&
+        mouseY >= virtualY &&
+        mouseY <= virtualY + tamanoEscalar
+      ) {
+        tarjetaDebajoDeMouse = tarjeta;
+        break; //corto cuando encuentro algo a resaltar
+      } else if(this.estaEnZonaDeTolerancia(mouseX, mouseY, tarjeta)){
+        tarjetaZonaDeToleranciaEnMouse = tarjeta;
+        break;
+      }//corto cuando encuentro algo a resaltar
     }
-
-    // si me encuentro en la tarjeta
-    for (const tarjeta of this.gestorTarjetas.obtenerTodas()) {
-        tarjeta.resaltada= tarjeta === tarjetaSobre; //se fija en cada tarjeta para resaltar o dejar de resaltar
-        tarjeta.mouseEnZonaTolerante= this.estaEnZonaDeToleranciaTarjetas(mouseX, mouseY) === tarjeta;
+    
+    //actualizo los atributos de cada tarjeta
+    for (const tarjeta of todasLasTarjetas){
+        tarjeta.resaltada = tarjeta === tarjetaDebajoDeMouse;
+        tarjeta.mouseEnZonaTolerante = tarjeta === tarjetaZonaDeToleranciaEnMouse;
     }
 
     this.dibujar();
-    //this.dibujarTarjetas();
 }
 
-estaEnZonaDeToleranciaTarjetas(xMouse, yMouse) {
-  for (const tarjeta of this.gestorTarjetas.obtenerTodas()) {
-    if (this.estaEnZonaDeTolerancia(xMouse, yMouse, tarjeta)) {
-      return tarjeta; //si el cursor está en la zona de tolerancia de alguna tarjeta
+  estaEnZonaDeToleranciaTarjetas(xMouse, yMouse) {
+    for (const tarjeta of this.gestorTarjetas.obtenerTodas()) {
+      if (this.estaEnZonaDeTolerancia(xMouse, yMouse, tarjeta)) {
+        return tarjeta; //si el cursor está en la zona de tolerancia de alguna tarjeta
+      }
     }
+    return null; // si el cursor no está en la zona de tolerancia de ninguna tarjeta
   }
-  return null; // si el cursor no está en la zona de tolerancia de ninguna tarjeta
-}
 
-estaEnZonaDeTolerancia(xMouse, yMouse, tarjeta) {
-  const virtualX = this.aVirtualX(tarjeta.x);
-  const virtualY = this.aVirtualY(tarjeta.y);
-  const tamanoEscalar = 100 * this.escala;
-  const grosorZonaTolerancia = tarjeta.grosorZonaTolerancia; 
+  estaEnZonaDeTolerancia(xMouse, yMouse, tarjeta) {
+    const virtualX = this.aVirtualX(tarjeta.x);
+    const virtualY = this.aVirtualY(tarjeta.y);
+    const tamanoEscalar = tarjeta.tamanoOriginal * this.escala;
+    const grosorZonaTolerancia = tarjeta.grosorZonaTolerancia; 
 
-  //  límites de la zona de tolerancia
-  const limiteIzquierdo = virtualX - grosorZonaTolerancia;
-  const limiteDerecho = virtualX + tamanoEscalar + grosorZonaTolerancia;
-  const limiteSuperior = virtualY - grosorZonaTolerancia;
-  const limiteInferior = virtualY + tamanoEscalar + grosorZonaTolerancia;
+    //  límites de la zona de tolerancia
+    const limiteIzquierdo = virtualX - grosorZonaTolerancia;
+    const limiteDerecho = virtualX + tamanoEscalar + grosorZonaTolerancia;
+    const limiteSuperior = virtualY - grosorZonaTolerancia;
+    const limiteInferior = virtualY + tamanoEscalar + grosorZonaTolerancia;
 
-  //  si las coordenadas del mouse están dentro de la zona de tolerancia
-  return (
-    (xMouse >= limiteIzquierdo && xMouse<= virtualX && yMouse >= limiteSuperior && yMouse <= limiteInferior) ||
-    (xMouse <= limiteDerecho && xMouse >= tamanoEscalar + virtualX && yMouse >= limiteSuperior && yMouse <= limiteInferior) ||
-    (yMouse >= limiteSuperior && yMouse <= virtualY && xMouse >=limiteIzquierdo && xMouse <= limiteDerecho) ||
-    (yMouse <= limiteInferior && yMouse >= virtualY + tamanoEscalar && xMouse >=limiteIzquierdo && xMouse <= limiteDerecho)
-  );
-}
+    //  si las coordenadas del mouse están dentro de la zona de tolerancia
+    return (
+      (xMouse >= limiteIzquierdo && xMouse<= virtualX && yMouse >= limiteSuperior && yMouse <= limiteInferior) ||
+      (xMouse <= limiteDerecho && xMouse >= tamanoEscalar + virtualX && yMouse >= limiteSuperior && yMouse <= limiteInferior) ||
+      (yMouse >= limiteSuperior && yMouse <= virtualY && xMouse >=limiteIzquierdo && xMouse <= limiteDerecho) ||
+      (yMouse <= limiteInferior && yMouse >= virtualY + tamanoEscalar && xMouse >=limiteIzquierdo && xMouse <= limiteDerecho)
+    );
+  }
+
 
 }
 
@@ -360,10 +383,11 @@ class GestorTarjetas {
   constructor() {
     this.tarjetas = [];
   }
-  
+ 
   agregar(x, y, texto) {
     const tarjeta = new Tarjeta(x, y, texto);
     this.tarjetas.push(tarjeta);
+    //this.tarjetas.unshift(tarjeta);
   }
   
   limpiar() {
@@ -377,20 +401,32 @@ class GestorTarjetas {
   eliminar(indice) {
     this.tarjetas.splice(indice, 1);
   }
+
+  acomodarTarjetaAlFinal(tarjeta){
+    let lista = this.tarjetas;
+    const indicetarjeta = lista.indexOf(tarjeta);
+    if (indicetarjeta !== -1) {
+      lista.splice(indicetarjeta, 1); // Eliminar el tarjeta de su posición actual
+      lista.push(tarjeta); // Agregar el tarjeta al final de la lista
+    }
+    this.tarjetas = lista;      
+    
+  }
+
 }
 
 
 class Tarjeta {
   constructor(x, y, texto) {
-      this.x = x;
-      this.y = y;
-      this.texto = texto;
-      //efectos visuales. (mouseEnZonaTolerante: hover, resaltada: hover en su zona de tolerancia )
-      //this.mouseEnZonaTolerante = false; 
-      this.resaltada = false;
+    this.x = x;
+    this.y = y;
+    this.texto = texto;
+    //efectos visuales. (mouseEnZonaTolerante: hover, resaltada: hover en su zona de tolerancia )
+    this.mouseEnZonaTolerante = false; 
+    this.resaltada = false;
 
-      this.tamanoOriginal= 100;
-      this.grosorZonaTolerancia = 15;
+    this.tamanoOriginal= 100;
+    this.grosorZonaTolerancia = 15;
   }
 }
 
@@ -431,12 +467,6 @@ const lienzoInfinito = new LienzoInfinito();
 
 document.addEventListener("contextmenu", (e) => e.preventDefault(), false);
 
-//document.getElementById("zoom-in").addEventListener("click", () => lienzoInfinito.zoom(1.05));
-//document.getElementById("zoom-out").addEventListener("click", () => lienzoInfinito.zoom(0.95));
-//document.getElementById("move-left").addEventListener("click", () => lienzoInfinito.desplazamientoIzquierda(10));
-//document.getElementById("move-right").addEventListener("click", () => lienzoInfinito.desplazamientoDerecha(10));
-//document.getElementById("move-up").addEventListener("click", () => lienzoInfinito.desplazamientoArriba(10));
-//document.getElementById("move-down").addEventListener("click", () => lienzoInfinito.desplazamientoAbajo(10));
 document.getElementById("add-card").addEventListener("click", () => lienzoInfinito.agregarTarjeta(obtenerEnteroAleatorio(100, 300), obtenerEnteroAleatorio(100, 300), "Hola"));
 
 //prueba flechac
