@@ -647,18 +647,8 @@ class Tarjeta {
     ventana.style.zIndex = 1000;
     ventana.style.display= 'flex';
     ventana.style.alignContent = 'center';
-//    ventana.style.alignItems = 'start';
-    //ventana.style.flexWrap = 'wrap';
-    //ventana.style.flexDirection = 'column';
     ventana.style.flexFlow = 'column wrap';
 
-/**display: flex;
-    align-content: center;
-    align-items: start;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-    flex-direction: column; */
-    
     
     const titulo = document.createElement('h3');
     titulo.textContent = 'Configuración de Mensaje';
@@ -667,7 +657,7 @@ class Tarjeta {
     const labelTitulo = document.createElement('label');
     labelTitulo.textContent = 'Titulo';
     ventana.appendChild(labelTitulo);
-  
+
     const inputTitulo = document.createElement('input');
     inputTitulo.type = 'text';
     inputTitulo.value = this.titulo;
@@ -677,10 +667,29 @@ class Tarjeta {
     labelContenido.textContent = 'Contenido';
     ventana.appendChild(labelContenido);
   
-    const inputContenido = document.createElement('input');
-    inputContenido.type = 'text';
-    inputContenido.value = this.contenido;
-    ventana.appendChild(inputContenido);
+    const textarea = document.createElement('textarea');
+    textarea.value = this.titulo;  
+    textarea.rows = 3; 
+    textarea.style.marginBottom = '10px';
+    ventana.appendChild(textarea);
+    const botonIcono = document.createElement('button');
+    botonIcono.textContent = 'Agregar Contenido';
+    botonIcono.onclick = function() {
+      const textarea2 = document.createElement('textarea');
+      textarea2.value = this.titulo;  
+      textarea2.rows = 3; 
+      textarea2.style.marginBottom = '10px';
+      ventana.insertBefore(textarea2, botonIcono);
+     
+    };
+    ventana.appendChild(botonIcono)
+
+
+    // Agregar todos los elementos a un contenedor (ventana)
+
+
+
+  
   
     const botonCerrar = document.createElement('button');
     botonCerrar.textContent = 'Cerrar';
