@@ -612,12 +612,34 @@ class GestorTarjetas {
       this.tarjetas.push(tarjeta); // Agregar la tarjeta al final de la lista
     }
   }
-
-
+  
+  
 }
 
 
 
+// Definir estilos CSS para animaciones
+const style = document.createElement('style');
+style.innerHTML = `
+  @keyframes slideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+  }
+  
+  @keyframes slideOut {
+    from { transform: translateX(0); }
+    to { transform: translateX(100%); }
+  }
+  
+  .slide-in {
+    animation: slideIn 0.2s forwards;
+  }
+  
+  .slide-out {
+    animation: slideOut 0.2s forwards;
+  }
+`;
+document.head.appendChild(style);
 class Tarjeta {
   constructor(x, y, titulo) {
     this.x = x;
@@ -633,73 +655,245 @@ class Tarjeta {
 
   }
 
+
   desplegarVentanaDeConfiguracion() {
+    // Crear un fondo oscuro para detectar clics fuera de la ventana
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
+    overlay.style.zIndex = 999;
+    document.body.appendChild(overlay);
+
     // Crear una ventana emergente con la información de la tarjeta
     const ventana = document.createElement('div');
     ventana.style.position = 'fixed';
     ventana.style.top = '0';
     ventana.style.right = '0';
-    ventana.style.height = '100%';
     ventana.style.width = '300px';
+    ventana.style.height = '100%';
     ventana.style.padding = '20px';
-    ventana.style.backgroundColor = 'rgb(229,229,220)';
+    ventana.style.backgroundColor = 'rgb(215 215 215)';
     ventana.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)';
     ventana.style.zIndex = 1000;
-    ventana.style.display= 'flex';
-    ventana.style.alignContent = 'center';
-    ventana.style.flexFlow = 'column wrap';
+    ventana.style.display = 'flex';
+    ventana.style.flexDirection = 'column';
+    ventana.style.gap = '10px';
+    ventana.style.overflowY = 'scroll';
+    ventana.classList.add('slide-in');
 
-    
     const titulo = document.createElement('h3');
     titulo.textContent = 'Configuración de Mensaje';
     ventana.appendChild(titulo);
-  
+    
+    // Sección de título de mensaje
+    const seccionTitulo = document.createElement('div');
+
     const labelTitulo = document.createElement('label');
-    labelTitulo.textContent = 'Titulo';
-    ventana.appendChild(labelTitulo);
+    labelTitulo.textContent = 'Título de mensaje';
+    seccionTitulo.appendChild(labelTitulo);
 
     const inputTitulo = document.createElement('input');
     inputTitulo.type = 'text';
     inputTitulo.value = this.titulo;
-    ventana.appendChild(inputTitulo);
+    seccionTitulo.appendChild(inputTitulo);
 
-    const labelContenido = document.createElement('label');
-    labelContenido.textContent = 'Contenido';
-    ventana.appendChild(labelContenido);
-  
+    const seccionBusquedaEnGlobales = document.createElement('div');
+    seccionBusquedaEnGlobales.style.display = 'inline-block';
+    seccionBusquedaEnGlobales.style.flexDirection = 'column';
+    seccionBusquedaEnGlobales.style.gap = '10px';
+
+    const checkboxBusqueda = document.createElement('input');
+    checkboxBusqueda.type = 'checkbox';
+    const labelBusqueda = document.createElement('label');
+    labelBusqueda.textContent = 'Búsqueda en disparadores globales';
+    seccionBusquedaEnGlobales.appendChild(checkboxBusqueda);
+    seccionBusquedaEnGlobales.appendChild(labelBusqueda);
+
+    seccionTitulo.appendChild(seccionBusquedaEnGlobales);
+    ventana.appendChild(seccionTitulo);
+
+    // Sección de contenido del mensaje
+    const seccionContenidos = document.createElement('div');
+    seccionContenidos.style.display = 'flex';
+    seccionContenidos.style.flexDirection = 'column';
+    seccionContenidos.style.gap = '10px';
+
+    const labelContenido = document.createElement('h4');
+    labelContenido.textContent = 'Contenidos del mensaje';
+    seccionContenidos.appendChild(labelContenido);
+
+    const divContenido = document.createElement('div');
+
     const textarea = document.createElement('textarea');
-    textarea.value = this.titulo;  
-    textarea.rows = 3; 
-    textarea.style.marginBottom = '10px';
-    ventana.appendChild(textarea);
+    textarea.value = this.contenido;
+    textarea.rows = 3;
+    divContenido.appendChild(textarea);
+
+    const botonEmojis = document.createElement('button');
+    botonEmojis.textContent = 'Seleccionar icono';
+
+    divContenido.appendChild(botonEmojis);
+    seccionContenidos.appendChild(divContenido);
+
     const botonIcono = document.createElement('button');
     botonIcono.textContent = 'Agregar Contenido';
+    
     botonIcono.onclick = function() {
-      const textarea2 = document.createElement('textarea');
-      textarea2.value = this.titulo;  
-      textarea2.rows = 3; 
-      textarea2.style.marginBottom = '10px';
-      ventana.insertBefore(textarea2, botonIcono);
-     
+        const divContenido2 = document.createElement('div');
+        const textarea2 = document.createElement('textarea');
+        textarea2.value = this.contenido;
+        textarea2.rows = 3;
+        divContenido2.appendChild(textarea2);
+  
+        const botonEmojis2 = document.createElement('button');
+        botonEmojis2.textContent = 'Seleccionar icono';
+        divContenido2.appendChild(botonEmojis2);
+        seccionContenidos.appendChild(divContenido2);
+        seccionContenidos.insertBefore(divContenido2, botonIcono);
+
+        const emojiPicker2 = document.createElement('emoji-picker');
+        emojiPicker2.style.position = 'absolute';
+        emojiPicker2.style.display = 'none';
+        emojiPicker2.style.zIndex = 1001;
+
+        botonEmojis2.onclick = function() {
+            if (emojiPicker2.style.display === 'none') {
+                const rect = botonEmojis2.getBoundingClientRect();
+                emojiPicker2.style.top = `${rect.bottom}px`;
+                emojiPicker2.style.left = `${rect.left}px`;
+                emojiPicker2.style.display = 'block';
+            } else {
+                emojiPicker2.style.display = 'none';
+            }
+        };
+
+        document.body.appendChild(emojiPicker2);
     };
-    ventana.appendChild(botonIcono)
+    seccionContenidos.appendChild(botonIcono);
 
+    ventana.appendChild(seccionContenidos);
 
-    // Agregar todos los elementos a un contenedor (ventana)
+    // Sección de disparadores
+    const seccionDisparadores = document.createElement('div');
+    seccionDisparadores.style.display = 'flex';
+    seccionDisparadores.style.flexDirection = 'column';
+    seccionDisparadores.style.gap = '10px';
 
+    const labelDisparadores = document.createElement('h4');
+    labelDisparadores.textContent = 'Disparadores';
+    seccionDisparadores.appendChild(labelDisparadores);
 
+    const tipoDisparador = document.createElement('select');
+    const opcionesDisparador = ['texto', 'otra opción'];
+    opcionesDisparador.forEach(opcion => {
+        const opt = document.createElement('option');
+        opt.value = opcion;
+        opt.textContent = opcion;
+        tipoDisparador.appendChild(opt);
+    });
+    seccionDisparadores.appendChild(tipoDisparador);
 
-  
-  
-    const botonCerrar = document.createElement('button');
-    botonCerrar.textContent = 'Cerrar';
-    botonCerrar.onclick = () => {
-      document.body.removeChild(ventana);
-    };
-    ventana.appendChild(botonCerrar);
-  
+    const condicionDisparador = document.createElement('select');
+    const opcionesCondicion = ['contiene', 'otra opción'];
+    opcionesCondicion.forEach(opcion => {
+        const opt = document.createElement('option');
+        opt.value = opcion;
+        opt.textContent = opcion;
+        condicionDisparador.appendChild(opt);
+    });
+    seccionDisparadores.appendChild(condicionDisparador);
+
+    const textoDisparador = document.createElement('input');
+    textoDisparador.type = 'text';
+    textoDisparador.placeholder = 'palabras clave';
+    seccionDisparadores.appendChild(textoDisparador);
+
+    const checkboxEntorno = document.createElement('input');
+    checkboxEntorno.type = 'checkbox';
+    const labelEntorno = document.createElement('label');
+    labelEntorno.textContent = 'Entorno global';
+    seccionDisparadores.appendChild(checkboxEntorno);
+    seccionDisparadores.appendChild(labelEntorno);
+
+    const botonAgregarDisparadores = document.createElement('button');
+    botonAgregarDisparadores.textContent = 'Agregar disparadores';
+    seccionDisparadores.appendChild(botonAgregarDisparadores);
+
+    ventana.appendChild(seccionDisparadores);
+
+    // Sección de modificadores
+    const seccionModificadores = document.createElement('div');
+    seccionModificadores.style.display = 'flex';
+    seccionModificadores.style.flexDirection = 'column';
+    seccionModificadores.style.gap = '10px';
+
+    const labelModificadores = document.createElement('h4');
+    labelModificadores.textContent = 'Modificadores';
+    seccionModificadores.appendChild(labelModificadores);
+
+    const tablaModificadores = document.createElement('input');
+    tablaModificadores.type = 'text';
+    tablaModificadores.placeholder = 'tabla';
+    seccionModificadores.appendChild(tablaModificadores);
+
+    const campoModificadores = document.createElement('input');
+    campoModificadores.type = 'text';
+    campoModificadores.placeholder = 'campo';
+    seccionModificadores.appendChild(campoModificadores);
+
+    const registroModificadores = document.createElement('input');
+    registroModificadores.type = 'text';
+    registroModificadores.placeholder = 'registro';
+    seccionModificadores.appendChild(registroModificadores);
+
+    const funcionModificadores = document.createElement('input');
+    funcionModificadores.type = 'text';
+    funcionModificadores.placeholder = 'función';
+    seccionModificadores.appendChild(funcionModificadores);
+
+    const textoModificadores = document.createElement('textarea');
+    textoModificadores.value = 'Nuevo pedido de @nombre';
+    textoModificadores.rows = 3;
+    seccionModificadores.appendChild(textoModificadores);
+
+    ventana.appendChild(seccionModificadores);
+
     document.body.appendChild(ventana);
-  }
+
+    // Emoji picker independiente
+    const emojiPicker = document.createElement('emoji-picker');
+    emojiPicker.style.position = 'absolute';
+    emojiPicker.style.display = 'none';
+    emojiPicker.style.zIndex = 1001;
+    document.body.appendChild(emojiPicker);
+
+    // Mostrar/ocultar el emoji picker al hacer clic en el botón
+    botonEmojis.onclick = function() {
+        if (emojiPicker.style.display === 'none') {
+            const rect = botonEmojis.getBoundingClientRect();
+            emojiPicker.style.top = `${rect.bottom}px`;
+            emojiPicker.style.left = `${rect.left}px`;
+            emojiPicker.style.display = 'block';
+        } else {
+            emojiPicker.style.display = 'none';
+        }
+    };
+
+    // Cerrar la ventana al hacer clic fuera de ella
+    overlay.onclick = () => {
+        ventana.classList.replace('slide-in', 'slide-out');
+        ventana.addEventListener('animationend', () => {
+            document.body.removeChild(ventana);
+            document.body.removeChild(overlay);
+        });
+    };
+}
+
+
 } 
 
 class Flecha {
