@@ -8,6 +8,31 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+
+
+  /*estilos globales*/
+  --gris-principal-transparente: rgb(229 229 229 / 75%);
+  --gris-secundario-transparente: rgb(211 211 211 / 50%);
+
+}
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: 500;
+}
+
+input , button, textarea, select {
+  border-radius: 6px;
+  border: none;
+  padding: 5px;
+  margin: 0;
+}
+
+button:hover{
+  cursor: pointer;
+}
+
+textarea {
+  resize: none;
 }
 
 body {
@@ -41,3 +66,106 @@ body {
   column-gap: 0.5rem;
 }
 
+#agregar-tarjeta {
+  display: flex;
+  -webkit-transition: all 0.2s ease-in-out;
+  -moz-transition: all 0.2s ease-in-out;
+  -ms-transition: all 0.2s ease-in-out;
+  -o-transition: all 0.2s ease-in-out;
+}
+
+.tip-emergente {
+  display: none;
+  position: absolute;
+  background-color: #2f2f2fbd;
+  padding: .5em;
+  color: white;
+  font-size: .7rem;
+  width: max-content;
+  max-width: 10rem;
+  overflow: hidden;
+}
+
+#agregar-tarjeta:hover {
+  transform: scale(1.1);
+}
+
+.contenedorLabelYTitulo{
+  font-size: .9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.contenedorLabelYTitulo>input{
+  background-color: #b2b2b2;
+}
+
+.contenedorLabelYTitulo>input:focus{
+  background-color: #fdfdfd;
+}
+
+.check-box-con-texto{
+  display: flex;
+  align-items: center;
+  gap:5px;
+  font-size: .8rem;
+  color: #373737;
+  margin: 5px 0px;
+}
+
+.check-box-con-texto>input{
+  accent-color: #1d8ac7;
+  margin: 2px;
+  border: none;
+}
+
+.configuracionDeMensaje{
+  background-color: var(--gris-principal-transparente);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(10px);
+  box-sizing: border-box;
+  position: fixed;
+  top: 0px;
+  right: 0px;
+  width: 340px;
+  height: 100%;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  overflow-y: scroll;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  
+  border-radius: 12px;
+}
+
+.seccionConfiguracionDeMensaje{
+  padding: 25px;
+  background-color: var(--gris-secundario-transparente);
+  display: flex;
+  flex-direction: column;
+  gap:15px;
+}
+
+.seccionConfiguracionDeMensaje>h4{
+  margin-bottom: 10px;
+}
+
+.seccionConfiguracionDeMensaje>button{
+  background-color: #6CC8FC;
+  border-radius: 12px;
+}
+
+.seccionConfiguracionDeMensaje>button:hover{
+  background-color: #9cdbff;
+}
+
+.contenedorSeccionAgregable{
+  background-color: #b2b2b2;
+  padding: 15px;
+  display: flex;
+  border-radius: 10px;
+  flex-direction: column;
+  gap: 8px;
+}

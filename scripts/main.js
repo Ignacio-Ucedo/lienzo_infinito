@@ -185,12 +185,24 @@ class LienzoInfinito {
       //hovers
       this.manejarMouseHover(evento);
     } else if(evento.buttons ===2){ //click derecho presionado, lo mismo que un else
-      const mouseX = evento.clientX;
-      const mouseY = evento.clientY;
-      const tarjetaZonaDeToleranciaEnMouse = this.estaEnZonaDeToleranciaTarjetas(mouseX, mouseY);
-      if (tarjetaZonaDeToleranciaEnMouse) {
-          this.gestorTarjetas.eliminarTarjeta(tarjetaZonaDeToleranciaEnMouse);
+      const todasLasTarjetas = this.gestorTarjetas.obtenerTodas();
+      for (let i = todasLasTarjetas.length - 1; i >= 0; i--) { //for invertido debido a la prioridad de la tarjetas "de más arriba" en el dibujo
+        const tarjeta = todasLasTarjetas[i];
+        const virtualX = this.aVirtualX(tarjeta.x);
+        const virtualY = this.aVirtualY(tarjeta.y);
+        const tamanoEscalar = tarjeta.tamanoOriginal * this.escala;
+        const mouseX = evento.clientX;
+        const mouseY = evento.clientY;
+        if (
+          mouseX >= virtualX &&
+          mouseX <= virtualX + tamanoEscalar &&
+          mouseY >= virtualY &&
+          mouseY <= virtualY + tamanoEscalar
+        ) {//quiero eliminar una tarjeta:
+          this.gestorTarjetas.eliminarTarjeta(tarjeta);
           this.dibujar();
+          break;
+        }
       }
     }
       
@@ -666,45 +678,41 @@ class Tarjeta {
     overlay.style.height = '100%';
     overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
     overlay.style.zIndex = 999;
+    overlay.style.backdropFilter = 'blur(1px)';
     document.body.appendChild(overlay);
 
-    // Crear una ventana emergente con la información de la tarjeta
-    const ventana = document.createElement('div');
-    ventana.style.position = 'fixed';
-    ventana.style.top = '0';
-    ventana.style.right = '0';
-    ventana.style.width = '300px';
-    ventana.style.height = '100%';
-    ventana.style.padding = '20px';
-    ventana.style.backgroundColor = 'rgb(215 215 215)';
-    ventana.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)';
-    ventana.style.zIndex = 1000;
-    ventana.style.display = 'flex';
-    ventana.style.flexDirection = 'column';
-    ventana.style.gap = '10px';
-    ventana.style.overflowY = 'scroll';
-    ventana.classList.add('slide-in');
+    // Crear una configuracionDeMensaje emergente con la información de la tarjeta
+    const configuracionDeMensaje = document.createElement('div');
+    configuracionDeMensaje.classList.add('configuracionDeMensaje');
+    configuracionDeMensaje.classList.add('slide-in');
 
     const titulo = document.createElement('h3');
     titulo.textContent = 'Configuración de Mensaje';
-    ventana.appendChild(titulo);
+    configuracionDeMensaje.appendChild(titulo);
+    titulo.classList.add('seccionConfiguracionDeMensaje');
     
     // Sección de título de mensaje
     const seccionTitulo = document.createElement('div');
+    
+    const tituloGeneral = document.createElement('h4');
+    tituloGeneral.textContent = 'General';
+    seccionTitulo.appendChild(tituloGeneral);
+
+    const contenedorLabelYTitulo = document.createElement('div');
+    contenedorLabelYTitulo.classList.add('contenedorLabelYTitulo');
 
     const labelTitulo = document.createElement('label');
     labelTitulo.textContent = 'Título de mensaje';
-    seccionTitulo.appendChild(labelTitulo);
+    contenedorLabelYTitulo.appendChild(labelTitulo);
 
     const inputTitulo = document.createElement('input');
     inputTitulo.type = 'text';
     inputTitulo.value = this.titulo;
-    seccionTitulo.appendChild(inputTitulo);
+    contenedorLabelYTitulo.appendChild(inputTitulo);
+    seccionTitulo.appendChild(contenedorLabelYTitulo);
 
     const seccionBusquedaEnGlobales = document.createElement('div');
-    seccionBusquedaEnGlobales.style.display = 'inline-block';
-    seccionBusquedaEnGlobales.style.flexDirection = 'column';
-    seccionBusquedaEnGlobales.style.gap = '10px';
+    seccionBusquedaEnGlobales.classList.add('check-box-con-texto');
 
     const checkboxBusqueda = document.createElement('input');
     checkboxBusqueda.type = 'checkbox';
@@ -714,46 +722,58 @@ class Tarjeta {
     seccionBusquedaEnGlobales.appendChild(labelBusqueda);
 
     seccionTitulo.appendChild(seccionBusquedaEnGlobales);
-    ventana.appendChild(seccionTitulo);
+    configuracionDeMensaje.appendChild(seccionTitulo);
+    seccionTitulo.classList.add('seccionConfiguracionDeMensaje');
 
     // Sección de contenido del mensaje
     const seccionContenidos = document.createElement('div');
-    seccionContenidos.style.display = 'flex';
-    seccionContenidos.style.flexDirection = 'column';
-    seccionContenidos.style.gap = '10px';
 
     const labelContenido = document.createElement('h4');
     labelContenido.textContent = 'Contenidos del mensaje';
     seccionContenidos.appendChild(labelContenido);
 
-    const divContenido = document.createElement('div');
+    const contenidoAgregable = document.createElement('div');
+    contenidoAgregable.classList.add('contenedorSeccionAgregable');
 
     const textarea = document.createElement('textarea');
     textarea.value = this.contenido;
     textarea.rows = 3;
-    divContenido.appendChild(textarea);
+    contenidoAgregable.appendChild(textarea);
 
     const botonEmojis = document.createElement('button');
-    botonEmojis.textContent = 'Seleccionar icono';
+    botonEmojis.textContent= 'Seleccionar icono';
 
-    divContenido.appendChild(botonEmojis);
-    seccionContenidos.appendChild(divContenido);
+    const emojiPicker = document.createElement('emoji-picker');
+    emojiPicker.style.position = 'absolute';
+    emojiPicker.style.display = 'none';
+    emojiPicker.style.zIndex = 1001;
+    
+    botonEmojis.onclick = function() {
+        if (emojiPicker.style.display === 'none') {
+            emojiPicker.style.display = 'block';
+        } else {
+            emojiPicker.style.display = 'none';
+        }
+    };
+
+    contenidoAgregable.appendChild(botonEmojis);
+    contenidoAgregable.appendChild(emojiPicker);
+    seccionContenidos.appendChild(contenidoAgregable);
 
     const botonIcono = document.createElement('button');
     botonIcono.textContent = 'Agregar Contenido';
     
     botonIcono.onclick = function() {
-        const divContenido2 = document.createElement('div');
+        const contenidoAgregable2 = document.createElement('div');
+        contenidoAgregable2.classList.add('contenedorSeccionAgregable');
         const textarea2 = document.createElement('textarea');
         textarea2.value = this.contenido;
         textarea2.rows = 3;
-        divContenido2.appendChild(textarea2);
+        contenidoAgregable2.appendChild(textarea2);
   
         const botonEmojis2 = document.createElement('button');
-        botonEmojis2.textContent = 'Seleccionar icono';
-        divContenido2.appendChild(botonEmojis2);
-        seccionContenidos.appendChild(divContenido2);
-        seccionContenidos.insertBefore(divContenido2, botonIcono);
+        botonEmojis2.textContent= 'Seleccionar icono';
+        contenidoAgregable2.appendChild(botonEmojis2);
 
         const emojiPicker2 = document.createElement('emoji-picker');
         emojiPicker2.style.position = 'absolute';
@@ -762,31 +782,30 @@ class Tarjeta {
 
         botonEmojis2.onclick = function() {
             if (emojiPicker2.style.display === 'none') {
-                const rect = botonEmojis2.getBoundingClientRect();
-                emojiPicker2.style.top = `${rect.bottom}px`;
-                emojiPicker2.style.left = `${rect.left}px`;
                 emojiPicker2.style.display = 'block';
             } else {
                 emojiPicker2.style.display = 'none';
             }
         };
 
-        document.body.appendChild(emojiPicker2);
+        contenidoAgregable2.appendChild(emojiPicker2);
+        seccionContenidos.appendChild(contenidoAgregable2);
+        seccionContenidos.insertBefore(contenidoAgregable2, botonIcono);
     };
     seccionContenidos.appendChild(botonIcono);
 
-    ventana.appendChild(seccionContenidos);
+    configuracionDeMensaje.appendChild(seccionContenidos);
+    seccionContenidos.classList.add('seccionConfiguracionDeMensaje');
 
     // Sección de disparadores
     const seccionDisparadores = document.createElement('div');
-    seccionDisparadores.style.display = 'flex';
-    seccionDisparadores.style.flexDirection = 'column';
-    seccionDisparadores.style.gap = '10px';
-
-    const labelDisparadores = document.createElement('h4');
-    labelDisparadores.textContent = 'Disparadores';
-    seccionDisparadores.appendChild(labelDisparadores);
-
+    
+    const tituloDisparadores = document.createElement('h4');
+    tituloDisparadores.textContent = 'Disparadores';
+    seccionDisparadores.appendChild(tituloDisparadores);
+    
+    const disparadorAgregable = document.createElement('div');
+    disparadorAgregable.classList.add('contenedorSeccionAgregable');
     const tipoDisparador = document.createElement('select');
     const opcionesDisparador = ['texto', 'otra opción'];
     opcionesDisparador.forEach(opcion => {
@@ -795,7 +814,7 @@ class Tarjeta {
         opt.textContent = opcion;
         tipoDisparador.appendChild(opt);
     });
-    seccionDisparadores.appendChild(tipoDisparador);
+    disparadorAgregable.appendChild(tipoDisparador);
 
     const condicionDisparador = document.createElement('select');
     const opcionesCondicion = ['contiene', 'otra opción'];
@@ -805,93 +824,83 @@ class Tarjeta {
         opt.textContent = opcion;
         condicionDisparador.appendChild(opt);
     });
-    seccionDisparadores.appendChild(condicionDisparador);
+    disparadorAgregable.appendChild(condicionDisparador);
 
     const textoDisparador = document.createElement('input');
     textoDisparador.type = 'text';
     textoDisparador.placeholder = 'palabras clave';
-    seccionDisparadores.appendChild(textoDisparador);
+    disparadorAgregable.appendChild(textoDisparador);
 
+    const seccionEntornoDisparador = document.createElement('div');
+    seccionEntornoDisparador.classList.add('check-box-con-texto');
     const checkboxEntorno = document.createElement('input');
     checkboxEntorno.type = 'checkbox';
     const labelEntorno = document.createElement('label');
     labelEntorno.textContent = 'Entorno global';
-    seccionDisparadores.appendChild(checkboxEntorno);
-    seccionDisparadores.appendChild(labelEntorno);
+    seccionEntornoDisparador.appendChild(checkboxEntorno);
+    seccionEntornoDisparador.appendChild(labelEntorno);
+    disparadorAgregable.appendChild(seccionEntornoDisparador);
+
+    seccionDisparadores.appendChild(disparadorAgregable);
 
     const botonAgregarDisparadores = document.createElement('button');
     botonAgregarDisparadores.textContent = 'Agregar disparadores';
     seccionDisparadores.appendChild(botonAgregarDisparadores);
 
-    ventana.appendChild(seccionDisparadores);
+    configuracionDeMensaje.appendChild(seccionDisparadores);
+    seccionDisparadores.classList.add('seccionConfiguracionDeMensaje');
 
     // Sección de modificadores
     const seccionModificadores = document.createElement('div');
-    seccionModificadores.style.display = 'flex';
-    seccionModificadores.style.flexDirection = 'column';
-    seccionModificadores.style.gap = '10px';
-
-    const labelModificadores = document.createElement('h4');
-    labelModificadores.textContent = 'Modificadores';
-    seccionModificadores.appendChild(labelModificadores);
+    
+    const tituloModificadores = document.createElement('h4');
+    tituloModificadores.textContent = 'Modificadores';
+    seccionModificadores.appendChild(tituloModificadores);
+    
+    const modificadorAgregable = document.createElement('div');
+    modificadorAgregable.classList.add('contenedorSeccionAgregable');
 
     const tablaModificadores = document.createElement('input');
     tablaModificadores.type = 'text';
     tablaModificadores.placeholder = 'tabla';
-    seccionModificadores.appendChild(tablaModificadores);
+    modificadorAgregable.appendChild(tablaModificadores);
 
     const campoModificadores = document.createElement('input');
     campoModificadores.type = 'text';
     campoModificadores.placeholder = 'campo';
-    seccionModificadores.appendChild(campoModificadores);
+    modificadorAgregable.appendChild(campoModificadores);
 
     const registroModificadores = document.createElement('input');
     registroModificadores.type = 'text';
     registroModificadores.placeholder = 'registro';
-    seccionModificadores.appendChild(registroModificadores);
+    modificadorAgregable.appendChild(registroModificadores);
 
     const funcionModificadores = document.createElement('input');
     funcionModificadores.type = 'text';
     funcionModificadores.placeholder = 'función';
-    seccionModificadores.appendChild(funcionModificadores);
+    modificadorAgregable.appendChild(funcionModificadores);
 
     const textoModificadores = document.createElement('textarea');
     textoModificadores.value = 'Nuevo pedido de @nombre';
     textoModificadores.rows = 3;
-    seccionModificadores.appendChild(textoModificadores);
+    modificadorAgregable.appendChild(textoModificadores);
+    
+    seccionModificadores.appendChild(modificadorAgregable);
+    seccionModificadores.classList.add('seccionConfiguracionDeMensaje');
+    
+    configuracionDeMensaje.appendChild(seccionModificadores);
+    document.body.appendChild(configuracionDeMensaje);
 
-    ventana.appendChild(seccionModificadores);
-
-    document.body.appendChild(ventana);
-
-    // Emoji picker independiente
-    const emojiPicker = document.createElement('emoji-picker');
-    emojiPicker.style.position = 'absolute';
-    emojiPicker.style.display = 'none';
-    emojiPicker.style.zIndex = 1001;
-    document.body.appendChild(emojiPicker);
-
-    // Mostrar/ocultar el emoji picker al hacer clic en el botón
-    botonEmojis.onclick = function() {
-        if (emojiPicker.style.display === 'none') {
-            const rect = botonEmojis.getBoundingClientRect();
-            emojiPicker.style.top = `${rect.bottom}px`;
-            emojiPicker.style.left = `${rect.left}px`;
-            emojiPicker.style.display = 'block';
-        } else {
-            emojiPicker.style.display = 'none';
-        }
-    };
-
-    // Cerrar la ventana al hacer clic fuera de ella
+    // Cerrar la configuracionDeMensaje al hacer clic fuera de ella
     overlay.onclick = () => {
-        ventana.classList.replace('slide-in', 'slide-out');
-        ventana.addEventListener('animationend', () => {
-            document.body.removeChild(ventana);
+        configuracionDeMensaje.classList.replace('slide-in', 'slide-out');
+        configuracionDeMensaje.addEventListener('animationend', () => {
+            document.body.removeChild(configuracionDeMensaje);
             document.body.removeChild(overlay);
         });
     };
 }
+
 
 
 } 
@@ -943,9 +952,49 @@ function obtenerEnteroAleatorio(min, max) {
   const numeroAleatorio = Math.floor(Math.random() * (max - min + 1)) + min;
   return numeroAleatorio;
 }
+function agregarToolTip(element, text) {
+  //
+  element.style.position = 'relative';
+  // Crear el tooltip
+  const tooltip = document.createElement('div');
+  tooltip.className = 'tip-emergente';
+  tooltip.textContent = text;
+  element.appendChild(tooltip);
+  let timeout;
+
+  element.addEventListener('mouseenter', function (event) {
+    timeout = setTimeout(function () {
+      tooltip.style.display = 'block';
+      //tooltip.style.top = `${event.clientY - 10}px`;
+      //tooltip.style.left = `${event.clientX - 10}px`;
+      tooltip.style.top = '10px';
+      tooltip.style.left= '10px';
+    }, 500); 
+  });
+
+  element.addEventListener('mouseleave', function () {
+    clearTimeout(timeout);
+    tooltip.style.display = 'none';
+  });
+
+  element.addEventListener('mousemove', function (event) {
+    //tooltip.style.top = `${event.clientY - 10}px`;
+    //tooltip.style.left = `${event.clientX - 10}px`;
+    tooltip.style.top = '10px';
+    tooltip.style.left= '10px';
+  });
+}
+
 
 const lienzoInfinito = new LienzoInfinito();
 
 document.addEventListener("contextmenu", (e) => e.preventDefault(), false);
 
-document.getElementById("add-card").addEventListener("click", () => lienzoInfinito.agregarTarjeta(obtenerEnteroAleatorio(100, 300), obtenerEnteroAleatorio(100, 300), "Hola"));
+document.getElementById("agregar-tarjeta").addEventListener("click", () => lienzoInfinito.agregarTarjeta(obtenerEnteroAleatorio(100, 300), obtenerEnteroAleatorio(100, 300), "Hola"));
+agregarToolTip(document.getElementById("agregar-tarjeta"), "Agregar tarjeta (n)");
+
+document.addEventListener('keyup', function(event){
+  if (event.key == 'n'){
+    lienzoInfinito.agregarTarjeta(obtenerEnteroAleatorio(100, 300), obtenerEnteroAleatorio(100, 300), "Hola");
+  }
+});
