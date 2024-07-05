@@ -169,3 +169,12 @@ body {
   flex-direction: column;
   gap: 8px;
 }
+
+emoji-picker {
+  position: absolute;
+  display: none;
+  z-index: 1001;
+  transform-origin: bottom right;
+  transform: translate(-101%, -80%);
+  --emoji-size: 1rem;
+}
