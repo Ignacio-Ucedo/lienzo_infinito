@@ -256,7 +256,7 @@ class LienzoInfinito {
                       mouseY >= virtualY &&
                       mouseY <= virtualY + tamanoEscalar
                   ) { //hice doble click sobre tarjeta:
-                      tarjeta.desplegarVentanaDeConfiguracion();
+                      tarjeta.desplegarConfiguracionDeMensaje();
                       break;
                   }
               }
@@ -655,185 +655,364 @@ class GestorTarjetas {
 
 }
 
-
-
-// Definir estilos CSS para animaciones
-const style = document.createElement('style');
-style.innerHTML = `
-@keyframes slideIn {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
-}
-
-@keyframes slideOut {
-  from { transform: translateX(0); }
-  to { transform: translateX(100%); }
-}
-
-.slide-in {
-  animation: slideIn 0.2s forwards;
-}
-
-.slide-out {
-  animation: slideOut 0.2s forwards;
-}
-`;
-document.head.appendChild(style);
 class Tarjeta {
   constructor(x, y, titulo) {
-      this.x = x;
-      this.y = y;
-      this.titulo = titulo;
-      this.contenido = "contenido";
-      //efectos visuales. (mouseEnZonaTolerante: hover por su zona de tolerancia, resaltada: hover)
-      this.mouseEnZonaTolerante = "ninguno";
-      this.resaltada = false;
+    this.x = x;
+    this.y = y;
+    this.titulo = titulo;
+    this.contenido = "contenido";
+    //efectos visuales. (mouseEnZonaTolerante: hover por su zona de tolerancia, resaltada: hover)
+    this.mouseEnZonaTolerante = "ninguno";
+    this.resaltada = false;
 
-      this.tamanoOriginal = 115;
-      this.grosorZonaTolerancia = 35;
+    this.tamanoOriginal = 115;
+    this.grosorZonaTolerancia = 35;
 
   }
 
 
-  desplegarVentanaDeConfiguracion() {
-      const overlay = document.createElement('div');
-      overlay.style.position = 'fixed';
-      overlay.style.top = '0';
-      overlay.style.left = '0';
-      overlay.style.width = '100%';
-      overlay.style.height = '100%';
-      overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
-      overlay.style.zIndex = 999;
-      overlay.style.backdropFilter = 'blur(1px)';
-      document.body.appendChild(overlay);
-      const configuracionDeMensaje = document.createElement('div');
-      configuracionDeMensaje.classList.add('configuracionDeMensaje');
-      configuracionDeMensaje.classList.add('slide-in');
-      configuracionDeMensaje.style.overflow = "visible";
-      const titulo = document.createElement('h3');
-      titulo.textContent = 'Configuración de Mensaje';
-      configuracionDeMensaje.appendChild(titulo);
-      titulo.classList.add('seccionConfiguracionDeMensaje');
-      const seccionTitulo = document.createElement('div');
-      const tituloGeneral = document.createElement('h4');
-      tituloGeneral.textContent = 'General';
-      seccionTitulo.appendChild(tituloGeneral);
-      const contenedorLabelYTitulo = document.createElement('div');
-      contenedorLabelYTitulo.classList.add('contenedorLabelYTitulo');
-      const labelTitulo = document.createElement('label');
-      labelTitulo.textContent = 'Título de mensaje';
-      contenedorLabelYTitulo.appendChild(labelTitulo);
-      const inputTitulo = document.createElement('input');
-      inputTitulo.type = 'text';
-      inputTitulo.value = 'Título inicial';
-      contenedorLabelYTitulo.appendChild(inputTitulo);
-      seccionTitulo.appendChild(contenedorLabelYTitulo);
-      const seccionBusquedaEnGlobales = document.createElement('div');
-      seccionBusquedaEnGlobales.classList.add('check-box-con-texto');
-      const checkboxBusqueda = document.createElement('input');
-      checkboxBusqueda.type = 'checkbox';
-      const labelBusqueda = document.createElement('label');
-      labelBusqueda.textContent = 'Búsqueda en disparadores globales';
-      seccionBusquedaEnGlobales.appendChild(checkboxBusqueda);
-      seccionBusquedaEnGlobales.appendChild(labelBusqueda);
-      seccionTitulo.appendChild(seccionBusquedaEnGlobales);
-      configuracionDeMensaje.appendChild(seccionTitulo);
-      seccionTitulo.classList.add('seccionConfiguracionDeMensaje');
-      const seccionContenidos = document.createElement('div');
-      const labelContenido = document.createElement('h4');
-      labelContenido.textContent = 'Contenidos del mensaje';
-      seccionContenidos.appendChild(labelContenido);
-      seccionContenidos.appendChild(crearContenedorAgregable());
-      const botonIcono = document.createElement('button');
-      botonIcono.textContent = 'Agregar Contenido';
-      botonIcono.onclick = function() {
-          seccionContenidos.insertBefore(crearContenedorAgregable('Otro contenido'), botonIcono);
-      };
-      seccionContenidos.appendChild(botonIcono);
-      configuracionDeMensaje.appendChild(seccionContenidos);
-      seccionContenidos.classList.add('seccionConfiguracionDeMensaje');
-      const seccionDisparadores = document.createElement('div');
-      const tituloDisparadores = document.createElement('h4');
-      tituloDisparadores.textContent = 'Disparadores';
-      seccionDisparadores.appendChild(tituloDisparadores);
-      const disparadorAgregable = document.createElement('div');
-      disparadorAgregable.classList.add('contenedorSeccionAgregable');
-      const tipoDisparador = document.createElement('select');
-      const opcionesDisparador = ['texto', 'otra opción'];
-      opcionesDisparador.forEach(opcion => {
-          const opt = document.createElement('option');
-          opt.value = opcion;
-          opt.textContent = opcion;
-          tipoDisparador.appendChild(opt);
-      });
-      disparadorAgregable.appendChild(tipoDisparador);
-      const condicionDisparador = document.createElement('select');
-      const opcionesCondicion = ['contiene', 'otra opción'];
-      opcionesCondicion.forEach(opcion => {
-          const opt = document.createElement('option');
-          opt.value = opcion;
-          opt.textContent = opcion;
-          condicionDisparador.appendChild(opt);
-      });
-      disparadorAgregable.appendChild(condicionDisparador);
-      const textoDisparador = document.createElement('input');
-      textoDisparador.type = 'text';
-      textoDisparador.placeholder = 'palabras clave';
-      disparadorAgregable.appendChild(textoDisparador);
-      const seccionEntornoDisparador = document.createElement('div');
-      seccionEntornoDisparador.classList.add('check-box-con-texto');
-      const checkboxEntorno = document.createElement('input');
-      checkboxEntorno.type = 'checkbox';
-      const labelEntorno = document.createElement('label');
-      labelEntorno.textContent = 'Entorno global';
-      seccionEntornoDisparador.appendChild(checkboxEntorno);
-      seccionEntornoDisparador.appendChild(labelEntorno);
-      disparadorAgregable.appendChild(seccionEntornoDisparador);
-      seccionDisparadores.appendChild(disparadorAgregable);
-      const botonAgregarDisparadores = document.createElement('button');
-      botonAgregarDisparadores.textContent = 'Agregar disparadores';
-      seccionDisparadores.appendChild(botonAgregarDisparadores);
-      configuracionDeMensaje.appendChild(seccionDisparadores);
-      seccionDisparadores.classList.add('seccionConfiguracionDeMensaje');
-      const seccionModificadores = document.createElement('div');
-      const tituloModificadores = document.createElement('h4');
-      tituloModificadores.textContent = 'Modificadores';
-      seccionModificadores.appendChild(tituloModificadores);
-      const modificadorAgregable = document.createElement('div');
-      modificadorAgregable.classList.add('contenedorSeccionAgregable');
-      const tablaModificadores = document.createElement('input');
-      tablaModificadores.type = 'text';
-      tablaModificadores.placeholder = 'tabla';
-      modificadorAgregable.appendChild(tablaModificadores);
-      const campoModificadores = document.createElement('input');
-      campoModificadores.type = 'text';
-      campoModificadores.placeholder = 'campo';
-      modificadorAgregable.appendChild(campoModificadores);
-      const registroModificadores = document.createElement('input');
-      registroModificadores.type = 'text';
-      registroModificadores.placeholder = 'registro';
-      modificadorAgregable.appendChild(registroModificadores);
-      const funcionModificadores = document.createElement('input');
-      funcionModificadores.type = 'text';
-      funcionModificadores.placeholder = 'función';
-      modificadorAgregable.appendChild(funcionModificadores);
-      const textoModificadores = document.createElement('textarea');
-      textoModificadores.value = 'Nuevo pedido de @nombre';
-      textoModificadores.rows = 3;
-      modificadorAgregable.appendChild(textoModificadores);
-      seccionModificadores.appendChild(modificadorAgregable);
-      seccionModificadores.classList.add('seccionConfiguracionDeMensaje');
-      configuracionDeMensaje.appendChild(seccionModificadores);
-      document.body.appendChild(configuracionDeMensaje);
-      overlay.onclick = () => {
-          configuracionDeMensaje.classList.replace('slide-in', 'slide-out');
-          configuracionDeMensaje.addEventListener('animationend', () => {
-              document.body.removeChild(configuracionDeMensaje);
-              document.body.removeChild(overlay);
-          });
-      };
+  desplegarConfiguracionDeMensaje() {
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
+    overlay.style.zIndex = 999;
+    overlay.style.backdropFilter = 'blur(1px)';
+    document.body.appendChild(overlay);
+    const self = this; // referencia a this
+
+    const configuracionDeMensaje = document.createElement('div');
+    configuracionDeMensaje.classList.add('configuracionDeMensaje');
+    configuracionDeMensaje.classList.add('deslizarse-derecha-adentro');
+
+    //configuracionDeMensaje.style.overflow = "visible";
+    const titulo = document.createElement('h3');
+    titulo.textContent = 'Configuración de Mensaje';
+    configuracionDeMensaje.appendChild(titulo);
+    titulo.classList.add('seccionConfiguracionDeMensaje');
+
+    //seccion general
+    const seccionGeneral = document.createElement('div');
+    const tituloGeneral = document.createElement('h4');
+    tituloGeneral.textContent = 'General';
+    seccionGeneral.appendChild(tituloGeneral);
+    const contenedorLabelYTitulo = document.createElement('div');
+    contenedorLabelYTitulo.classList.add('contenedorLabelYTitulo');
+    const labelTitulo = document.createElement('label');
+    labelTitulo.textContent = 'Título de mensaje';
+    contenedorLabelYTitulo.appendChild(labelTitulo);
+    const inputTitulo = document.createElement('input');
+    inputTitulo.type = 'text';
+    inputTitulo.value = this.titulo;
+    contenedorLabelYTitulo.appendChild(inputTitulo);
+    seccionGeneral.appendChild(contenedorLabelYTitulo);
+    const seccionBusquedaEnGlobales = document.createElement('div');
+    seccionBusquedaEnGlobales.classList.add('check-box-con-texto');
+    const checkboxBusqueda = document.createElement('input');
+    checkboxBusqueda.type = 'checkbox';
+    const labelBusqueda = document.createElement('label');
+    labelBusqueda.textContent = 'Búsqueda en disparadores globales';
+    seccionBusquedaEnGlobales.appendChild(checkboxBusqueda);
+    seccionBusquedaEnGlobales.appendChild(labelBusqueda);
+    seccionGeneral.appendChild(seccionBusquedaEnGlobales);
+    configuracionDeMensaje.appendChild(seccionGeneral);
+    seccionGeneral.classList.add('seccionConfiguracionDeMensaje');
+
+    //seccion de contenidos
+    const seccionContenidos = document.createElement('div');
+    seccionContenidos.classList.add('contenidos');
+    const labelContenido = document.createElement('h4');
+    labelContenido.textContent = 'Contenidos del mensaje';
+    seccionContenidos.appendChild(labelContenido);
+    seccionContenidos.appendChild(this.crearContenidoDeMensaje());
+    const botonAgregarContenido = document.createElement('button');
+    botonAgregarContenido.textContent = 'Agregar Contenido';
+    botonAgregarContenido.onclick = function() {
+      const contenidoPorAgregar = self.crearContenidoDeMensaje(); 
+      contenidoPorAgregar.classList.add('deslizarse-arriba-adentro');
+      seccionContenidos.insertBefore(contenidoPorAgregar, botonAgregarContenido);
+    };
+    seccionContenidos.appendChild(botonAgregarContenido);
+    configuracionDeMensaje.appendChild(seccionContenidos);
+    seccionContenidos.classList.add('seccionConfiguracionDeMensaje');
+
+    //seccion disparadores
+    const seccionDisparadores = document.createElement('div');
+    seccionDisparadores.classList.add('disparadores');
+    const tituloDisparadores = document.createElement('h4');
+    tituloDisparadores.textContent = 'Disparadores';
+    seccionDisparadores.appendChild(tituloDisparadores);
+    seccionDisparadores.appendChild(this.crearDisparadoresDeMensaje());
+    const botonAgregarDisparadores = document.createElement('button');
+    botonAgregarDisparadores.textContent = 'Agregar Disparadores';
+    botonAgregarDisparadores.onclick = function() {
+        const disparadoresPorAgregar = self.crearDisparadoresDeMensaje();
+        disparadoresPorAgregar.classList.add('deslizarse-arriba-adentro');
+        seccionDisparadores.insertBefore(disparadoresPorAgregar, botonAgregarDisparadores);
+    };
+    seccionDisparadores.appendChild(botonAgregarDisparadores);
+    configuracionDeMensaje.appendChild(seccionDisparadores);
+    seccionDisparadores.classList.add('seccionConfiguracionDeMensaje');
+
+    //seccion modificadores
+    const seccionModificadores = document.createElement('div');
+    seccionModificadores.classList.add('modificadores');
+    seccionModificadores.classList.add('seccionConfiguracionDeMensaje');
+    const tituloModificadores = document.createElement('h4');
+    tituloModificadores.textContent = 'Modificadores';
+    seccionModificadores.appendChild(tituloModificadores);
+    seccionModificadores.appendChild(this.crearModificadorDeMensaje());
+    const botonAgregarModificador = document.createElement('button');
+    botonAgregarModificador.textContent = 'Agregar Modificador';
+    botonAgregarModificador.onclick = function() {
+      const modificadorPorAgregar = self.crearModificadorDeMensaje()
+      modificadorPorAgregar.classList.add('deslizarse-arriba-adentro');
+      seccionModificadores.insertBefore(modificadorPorAgregar, botonAgregarModificador);
+    };
+    seccionModificadores.appendChild(botonAgregarModificador);
+    configuracionDeMensaje.appendChild(seccionModificadores);
+
+    // Función para agregar listeners a las secciones agregables
+    function agregarListeners(seccionAgregable) {
+        seccionAgregable.addEventListener("mousemove", (e) => {
+            self.efectoMovimientoElemento(e, seccionAgregable); 
+            seccionAgregable.classList.remove('deslizarse-arriba-adentro');
+        });
+        seccionAgregable.addEventListener("mouseleave", () => {
+            self.efectoMovimientoElementoDesactivar(seccionAgregable); 
+        });
+
+        seccionAgregable.addEventListener("click", (evento) =>{
+            if(evento.target === seccionAgregable){
+                self.seleccionarElementoAgregable(seccionAgregable);
+            }
+        });
+    }
+
+    // Agregar listeners a los elementos existentes con la clase 'contenedorSeccionAgregable'
+    const seccionesAgregablesIniciales = configuracionDeMensaje.getElementsByClassName('contenedorSeccionAgregable');
+    Array.from(seccionesAgregablesIniciales).forEach(seccionAgregable => {
+        agregarListeners(seccionAgregable);
+    });
+
+    // Uso de MutationObserver para observar adición de elementos con clase 'contenedorSeccionAgregable'
+    const observer = new MutationObserver((mutationsList) => {
+        for (let mutation of mutationsList) {
+            if (mutation.type === 'childList') {
+                mutation.addedNodes.forEach(node => {
+                    if (node.nodeType === 1 && node.classList.contains('contenedorSeccionAgregable')) {
+                        agregarListeners(node);
+                    }
+                });
+            }
+        }
+    });
+
+    observer.observe(configuracionDeMensaje, { childList: true, subtree: true });
+    document.body.appendChild(configuracionDeMensaje);
+    overlay.onclick = () => {
+        configuracionDeMensaje.classList.replace('deslizarse-derecha-adentro', 'deslizarse-derecha-afuera');
+        configuracionDeMensaje.addEventListener('animationend', () => {
+            document.body.removeChild(configuracionDeMensaje);
+            document.body.removeChild(overlay);
+        });
+    };
   }
+  
+  crearContenidoDeMensaje(valorTextarea= 'Nuevo contenido') {
+    const contenidoAgregable = document.createElement('div');
+    contenidoAgregable.style.gap = '0px';
+    contenidoAgregable.classList.add('contenedorSeccionAgregable');
+    contenidoAgregable.style.position = "relative";
+
+    const cajaDeTexto = document.createElement('div');
+    cajaDeTexto.style.position= 'relative';
+
+    const textarea = document.createElement('textarea');
+    textarea.value = valorTextarea;
+    textarea.rows = 3;
+    textarea.style.paddingRight = '30px';
+    contenidoAgregable.appendChild(textarea);
+
+    const botonEmojis = document.createElement('button');
+    botonEmojis.style.backgroundColor = 'transparent';
+    botonEmojis.style.position = 'absolute';
+    botonEmojis.style.right = '0';
+    botonEmojis.style.bottom = '0';
+    botonEmojis.style.display = 'flex';
+    //botonEmojis.style.border = 'none'; // Elimina el borde del botón
+    //botonEmojis.style.padding = '0';  // Elimina el padding del botón
+
+    botonEmojis.innerHTML = `
+        <svg width="24px" height="24px" fill="none" >
+            <g>
+                <path d="M8.4 13.8C8.4 13.8 9.75 15.6 12 15.6C14.25 15.6 15.6 13.8 15.6 13.8M14.7 9.3H14.709M9.3 9.3H9.309M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM15.15 9.3C15.15 9.54853 14.9485 9.75 14.7 9.75C14.4515 9.75 14.25 9.54853 14.25 9.3C14.25 9.05147 14.4515 8.85 14.7 8.85C14.9485 8.85 15.15 9.05147 15.15 9.3ZM9.75 9.3C9.75 9.54853 9.54853 9.75 9.3 9.75C9.05147 9.75 8.85 9.54853 8.85 9.3C8.85 9.05147 9.05147 8.85 9.3 8.85C9.54853 8.85 9.75 9.05147 9.75 9.3Z" stroke="var(--color-contenidos)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+            </g>
+        </svg>
+    `;
+
+    const emojiPicker = document.createElement('emoji-picker');
+    emojiPicker.style.position = 'absolute';
+    emojiPicker.style.display = 'none';
+    emojiPicker.style.zIndex = 1001;
+    emojiPicker.classList.add('emoji-picker');
+
+    botonEmojis.addEventListener('click', function(event) {
+        event.stopPropagation(); // Evita que el evento de clic se propague
+        emojiPicker.style.display = emojiPicker.style.display === 'none' ? 'block' : 'none';
+    });
+
+    emojiPicker.addEventListener('emoji-click', function(event) {
+        const emoji = event.detail.unicode;
+        textarea.value += emoji;
+        emojiPicker.style.display = 'none';
+    });
+
+    document.addEventListener('click', function(event) {
+        if (!emojiPicker.contains(event.target) && event.target !== botonEmojis) {
+            emojiPicker.style.display = 'none';
+        }
+    });
+
+    cajaDeTexto.appendChild(botonEmojis);
+    cajaDeTexto.appendChild(emojiPicker);
+    contenidoAgregable.appendChild(cajaDeTexto);
+
+    return contenidoAgregable;
 }
+
+
+  crearDisparadoresDeMensaje(){
+    const disparador = document.createElement('div');
+    disparador.classList.add('contenedorSeccionAgregable');
+    const tipoDisparador = document.createElement('select');
+    const opcionesDisparador = ['texto', 'otra opción'];
+    opcionesDisparador.forEach(opcion => {
+        const opt = document.createElement('option');
+        opt.value = opcion;
+        opt.textContent = opcion;
+        tipoDisparador.appendChild(opt);
+    });
+    disparador.appendChild(tipoDisparador);
+    const condicionDisparador = document.createElement('select');
+    const opcionesCondicion = ['contiene', 'otra opción'];
+    opcionesCondicion.forEach(opcion => {
+        const opt = document.createElement('option');
+        opt.value = opcion;
+        opt.textContent = opcion;
+        condicionDisparador.appendChild(opt);
+    });
+    disparador.appendChild(condicionDisparador);
+    const textoDisparador = document.createElement('input');
+    textoDisparador.type = 'text';
+    textoDisparador.placeholder = 'palabras clave';
+    disparador.appendChild(textoDisparador);
+    const seccionEntornoDisparador = document.createElement('div');
+    seccionEntornoDisparador.classList.add('check-box-con-texto');
+    const checkboxEntorno = document.createElement('input');
+    checkboxEntorno.type = 'checkbox';
+    const labelEntorno = document.createElement('label');
+    labelEntorno.textContent = 'Entorno global';
+    seccionEntornoDisparador.appendChild(checkboxEntorno);
+    seccionEntornoDisparador.appendChild(labelEntorno);
+    disparador.appendChild(seccionEntornoDisparador);
+
+    return disparador;
+
+  }
+
+  crearModificadorDeMensaje(){
+    const modificador = document.createElement('div');
+    modificador.classList.add('contenedorSeccionAgregable');
+    const tablaModificadores = document.createElement('input');
+    tablaModificadores.type = 'text';
+    tablaModificadores.placeholder = 'tabla';
+    modificador.appendChild(tablaModificadores);
+    const campoModificadores = document.createElement('input');
+    campoModificadores.type = 'text';
+    campoModificadores.placeholder = 'campo';
+    modificador.appendChild(campoModificadores);
+    const registroModificadores = document.createElement('input');
+    registroModificadores.type = 'text';
+    registroModificadores.placeholder = 'registro';
+    modificador.appendChild(registroModificadores);
+    const funcionModificadores = document.createElement('input');
+    funcionModificadores.type = 'text';
+    funcionModificadores.placeholder = 'función';
+    modificador.appendChild(funcionModificadores);
+    const textoModificadores = document.createElement('textarea');
+    textoModificadores.value = 'Nuevo pedido de @nombre';
+    textoModificadores.rows = 3;
+    modificador.appendChild(textoModificadores);
+
+    return modificador;
+
+  }
+
+    efectoMovimientoElemento(evento, elemento) {
+        // obtener la posición del mouse relativa al elemento
+        const rect = elemento.getBoundingClientRect();
+        const x = evento.clientX - rect.left;
+        const y = evento.clientY - rect.top;
+
+        // encontrar el medio del elemento
+        const medioX = rect.width / 2;
+        const medioY = rect.height / 2;
+
+        // obtener el desplazamiento desde el medio como un porcentaje
+        // y reducirlo un poco
+        const maximo = 5;
+        const offsetX = ((x - medioX) / medioX) * maximo;
+        const offsetY = ((y - medioY) / medioY) * maximo;
+
+        // establecer la rotación
+        if(Math.abs(offsetX) <= maximo && Math.abs(offsetY) <= maximo ){
+            elemento.style.setProperty("--rotacionX", -1*offsetX + "deg");
+            elemento.style.setProperty("--rotacionY", offsetY + "deg");
+            elemento.style.setProperty("--anguloDeDegradado", Math.atan2(offsetY, offsetX) +(Math.PI/2) + "rad");
+            elemento.style.setProperty("--porcentaje-no-degradado", 70 + "%");
+            const padre = elemento.parentElement;
+            const clasesPadre = padre.classList;
+
+            if(clasesPadre.contains('contenidos')){
+
+                elemento.style.setProperty("--color-reflejo", obtenerVersionTransparenteDeColor('--color-contenidos'));
+
+            } else if(clasesPadre.contains('disparadores')){
+                elemento.style.setProperty("--color-reflejo", obtenerVersionTransparenteDeColor('--color-disparadores'));
+            } else if(clasesPadre.contains('modificadores')){
+                elemento.style.setProperty("--color-reflejo", obtenerVersionTransparenteDeColor('--color-modificadores'));
+            }
+        } else {
+            this.efectoMovimientoElementoDesactivar(elemento);
+        }
+    }
+
+    efectoMovimientoElementoDesactivar(elemento) {
+        elemento.style.setProperty("--rotacionX", 0 + "deg");
+        elemento.style.setProperty("--rotacionY", 0 + "deg");
+        elemento.style.setProperty("--porcentaje-no-degradado", 100 + "%");
+    }
+
+    seleccionarElementoAgregable(elemento){
+        const padre = elemento.parentElement;
+        const clasesPadre = padre.classList;
+
+        if(clasesPadre.contains('contenidos')){
+            elemento.style.outline = 'var(--color-contenidos) dashed 2px';
+        } else if(clasesPadre.contains('disparadores')){
+            elemento.style.outline = 'var(--color-disparadores) dashed 2px';
+        } else if(clasesPadre.contains('modificadores')){
+            elemento.style.outline = 'var(--color-modificadores) dashed 2px';
+        }
+    }
+
+
+}
+
 class Flecha {
   constructor(origen, destino, color = 'rgba(100, 190, 255, 1)', grosor = 2) {
       this.origen = origen;
@@ -877,7 +1056,28 @@ function obtenerEnteroAleatorio(min, max) {
   return numeroAleatorio;
 }
 
-function agregarToolTip(element, text) {
+function obtenerVersionTransparenteDeColor(strColor){
+    let rootStyles = getComputedStyle(document.documentElement);
+    let color = rootStyles.getPropertyValue(strColor).trim();
+    
+    function hexToRGBA(hex, alpha) {
+        hex = hex.replace('#', '');
+        
+        // Divide el color en sus componentes R, G y B
+        let r = parseInt(hex.substring(0, 2), 16);
+        let g = parseInt(hex.substring(2, 4), 16);
+        let b = parseInt(hex.substring(4, 6), 16);
+        
+        // Retorna el color en formato RGBA
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+    
+    // Convierte el color a RGBA con 10% de transparencia
+    let transparentColor = hexToRGBA(color, 0.1);
+
+    return transparentColor;    
+}
+    function agregarToolTip(element, text) {
   //
   element.style.position = 'relative';
   // Crear el tooltip
@@ -908,38 +1108,6 @@ function agregarToolTip(element, text) {
 }
 const lienzoInfinito = new LienzoInfinito();
 
-function crearContenedorAgregable(textareaValue = 'Contenido inicial') {
-  const contenidoAgregable = document.createElement('div');
-  contenidoAgregable.classList.add('contenedorSeccionAgregable');
-  contenidoAgregable.style.position = "relative";
-  const textarea = document.createElement('textarea');
-  textarea.value = textareaValue;
-  textarea.rows = 3;
-  contenidoAgregable.appendChild(textarea);
-  const botonEmojis = document.createElement('button');
-  botonEmojis.textContent = 'Seleccionar icono';
-  const emojiPicker = document.createElement('emoji-picker');
-  emojiPicker.style.position = 'absolute';
-  emojiPicker.style.display = 'none';
-  emojiPicker.style.zIndex = 1001;
-  emojiPicker.classList.add('emoji-picker');
-  botonEmojis.onclick = function() {
-      emojiPicker.style.display = emojiPicker.style.display === 'none' ? 'block' : 'none';
-  };
-  emojiPicker.addEventListener('emoji-click', function(event) {
-      const emoji = event.detail.emoji.native;
-      textarea.value += emoji;
-      emojiPicker.style.display = 'none';
-  });
-  document.addEventListener('click', function(event) {
-      if (!emojiPicker.contains(event.target) && event.target !== botonEmojis) {
-          emojiPicker.style.display = 'none';
-      }
-  });
-  contenidoAgregable.appendChild(botonEmojis);
-  contenidoAgregable.appendChild(emojiPicker);
-  return contenidoAgregable;
-}
 document.addEventListener("contextmenu", (e) => e.preventDefault(), false);
 document.getElementById("agregar-tarjeta").addEventListener("click", () => lienzoInfinito.agregarTarjeta(obtenerEnteroAleatorio(100, 300), obtenerEnteroAleatorio(100, 300), "Hola"));
 agregarToolTip(document.getElementById("agregar-tarjeta"), "Agregar tarjeta (n)");

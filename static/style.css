@@ -14,7 +14,42 @@
   --gris-principal-transparente: rgb(229 229 229 / 75%);
   --gris-secundario-transparente: rgb(211 211 211 / 50%);
 
+  --color-contenidos:#6CC8FC;
+  --color-disparadores:#92E1C4;
+  --color-modificadores:#c6b1f5;
+
+  --hover-contenidos:#aae0ff;
+  --hover-disparadores:#abf3d8;
+  --hover-modificadores:#deceff;
 }
+
+@keyframes deslizarseDesdeArribaAdentro {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes deslizarseDesdeDerechaAdentro {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes deslizarseDerechaAfuera {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+.deslizarse-arriba-adentro{
+  animation: deslizarseDesdeArribaAdentro 0.2s forwards;
+}
+
+.deslizarse-derecha-adentro {
+  animation: deslizarseDesdeDerechaAdentro 0.2s forwards;
+}
+
+.deslizarse-derecha-afuera{
+  animation: deslizarseDerechaAfuera 0.2s forwards;
+}
+
 h1, h2, h3, h4, h5, h6 {
   margin: 0;
   font-weight: 500;
@@ -153,28 +188,55 @@ body {
 }
 
 .seccionConfiguracionDeMensaje>button{
-  background-color: #6CC8FC;
   border-radius: 12px;
 }
 
-.seccionConfiguracionDeMensaje>button:hover{
-  background-color: #9cdbff;
-}
-
 .contenedorSeccionAgregable{
-  background-color: #b2b2b2;
+  --anguloDeDegradado: 0rad;
+  --bg-color: #b2b2b2;
+  --porcentaje-no-degradado: 100%;
+  --color-reflejo:#fff;
+  background: linear-gradient(
+    var(--anguloDeDegradado),
+    var(--bg-color) var(--porcentaje-no-degradado),
+    var(--color-reflejo) 100%
+  );
   padding: 15px;
   display: flex;
   border-radius: 10px;
   flex-direction: column;
   gap: 8px;
+  --rotacionX: 0deg;
+  --rotacionY: 0deg;
+  transform-style: preserve-3d;
+ /* transform: perspective(500px) rotateY(var(--rotacionX)) rotateX(var(--rotacionY));*/
 }
 
+.contenidos>button{
+  background-color: var(--color-contenidos);
+}
+
+.disparadores >button{
+  background-color: var(--color-disparadores);
+}
+.modificadores>button{
+  background-color: var(--color-modificadores);
+}
+
+.contenidos>button:hover{
+  background-color: var(--hover-contenidos);
+}
+
+.disparadores >button:hover{
+  background-color: var(--hover-disparadores);
+}
+.modificadores>button:hover{
+  background-color: var(--hover-modificadores);
+}
 emoji-picker {
   position: absolute;
   display: none;
   z-index: 1001;
-  transform-origin: bottom right;
   transform: translate(-101%, -80%);
   --emoji-size: 1rem;
 }
