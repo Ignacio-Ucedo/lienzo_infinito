@@ -1,3 +1,4 @@
+
 class LienzoInfinito {
   constructor(tamanoCelda = 30) {
       this.lienzo = null;
@@ -558,7 +559,8 @@ class GestorTarjetas {
   constructor() {
       this.tarjetas = [];
       this.flechas = [];
-      this.conexiones = new Map(); // mapa con tarjetas como claves y lista de listas (pares de valores flecha - punto de conexión) como valores. 
+      this.conexiones = new Map(); 
+      //conexiones[tarjeta] = [[flecha, punto de conex], [flecha2, punto de conex 2]...]
   }
 
   agregar(x, y, titulo) {
@@ -571,13 +573,10 @@ class GestorTarjetas {
       return this.tarjetas;
   }
 
-
-
   conectarTarjetas(padre, hijo, ladoPadre, ladoHijo) {
       const puntoDeConexionPadre = this.obtenerPuntoDeConexion(padre, ladoPadre);
       const puntoDeConexionHijo = this.obtenerPuntoDeConexion(hijo, ladoHijo);
       const flecha = new Flecha(puntoDeConexionPadre, puntoDeConexionHijo);
-      //flecha.dibujar(contexto);
       this.flechas.push(flecha);
 
       if (!this.conexiones.has(padre)) {
@@ -630,18 +629,20 @@ class GestorTarjetas {
 
 
   eliminarTarjeta(tarjeta) {
-      this.tarjetas = this.tarjetas.filter(t => t !== tarjeta);
-      this.conexiones.delete(tarjeta);
+    console.log(this.flechas);
+    this.tarjetas = this.tarjetas.filter(t => t !== tarjeta);
+    this.conexiones.delete(tarjeta);
 
-      // eliminar todas las flechas asociadas a la tarjeta
-      this.flechas = this.flechas.filter(flecha => {
-          return flecha.origen.tarjeta !== tarjeta && flecha.destino.tarjeta !== tarjeta;
-      });
+    // eliminar todas las flechas asociadas a la tarjeta
+    this.flechas = this.flechas.filter(flecha => {
+        return flecha.origen.tarjeta !== tarjeta && flecha.destino.tarjeta !== tarjeta;
+    });
 
-      // eliminar la tarjeta de las conexiones de otras tarjetas
-      for (let [tarjetaConectada, conexiones] of this.conexiones.entries()) {
-          this.conexiones.set(tarjetaConectada, conexiones.filter(conexion => conexion[0] !== tarjeta));
-      }
+    // eliminar la tarjeta de las conexiones de otras tarjetas
+    for (let [tarjetaConectada, conexiones] of this.conexiones.entries()) {
+        this.conexiones.set(tarjetaConectada, conexiones.filter(conexion => conexion[0] !== tarjeta));
+    }
+    console.log(this.flechas);
   }
 
   acomodarTarjetaAlFinal(tarjeta) {
@@ -678,21 +679,21 @@ class Tarjeta {
     overlay.style.left = '0';
     overlay.style.width = '100%';
     overlay.style.height = '100%';
-    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
-    overlay.style.zIndex = 999;
+    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.2)';
+    overlay.style.zIndex = 100;
     overlay.style.backdropFilter = 'blur(1px)';
     document.body.appendChild(overlay);
     const self = this; // referencia a this
 
     const configuracionDeMensaje = document.createElement('div');
-    configuracionDeMensaje.classList.add('configuracionDeMensaje');
+    configuracionDeMensaje.classList.add('configuracion-de-mensaje');
     configuracionDeMensaje.classList.add('deslizarse-derecha-adentro');
 
     //configuracionDeMensaje.style.overflow = "visible";
     const titulo = document.createElement('h3');
     titulo.textContent = 'Configuración de Mensaje';
     configuracionDeMensaje.appendChild(titulo);
-    titulo.classList.add('seccionConfiguracionDeMensaje');
+    titulo.classList.add('seccion-configuracion-de-mensaje');
 
     //seccion general
     const seccionGeneral = document.createElement('div');
@@ -700,7 +701,7 @@ class Tarjeta {
     tituloGeneral.textContent = 'General';
     seccionGeneral.appendChild(tituloGeneral);
     const contenedorLabelYTitulo = document.createElement('div');
-    contenedorLabelYTitulo.classList.add('contenedorLabelYTitulo');
+    contenedorLabelYTitulo.classList.add('label-y-titulo-de-mensaje');
     const labelTitulo = document.createElement('label');
     labelTitulo.textContent = 'Título de mensaje';
     contenedorLabelYTitulo.appendChild(labelTitulo);
@@ -719,25 +720,25 @@ class Tarjeta {
     seccionBusquedaEnGlobales.appendChild(labelBusqueda);
     seccionGeneral.appendChild(seccionBusquedaEnGlobales);
     configuracionDeMensaje.appendChild(seccionGeneral);
-    seccionGeneral.classList.add('seccionConfiguracionDeMensaje');
+    seccionGeneral.classList.add('seccion-configuracion-de-mensaje');
 
     //seccion de contenidos
     const seccionContenidos = document.createElement('div');
     seccionContenidos.classList.add('contenidos');
     const labelContenido = document.createElement('h4');
-    labelContenido.textContent = 'Contenidos del mensaje';
+    labelContenido.textContent = 'Contenidos';
     seccionContenidos.appendChild(labelContenido);
-    seccionContenidos.appendChild(this.crearContenidoDeMensaje());
+    seccionContenidos.appendChild(this.crearSeccionAgregable("contenido"));
     const botonAgregarContenido = document.createElement('button');
     botonAgregarContenido.textContent = 'Agregar Contenido';
     botonAgregarContenido.onclick = function() {
-      const contenidoPorAgregar = self.crearContenidoDeMensaje(); 
+      const contenidoPorAgregar = self.crearSeccionAgregable("contenido"); 
       contenidoPorAgregar.classList.add('deslizarse-arriba-adentro');
       seccionContenidos.insertBefore(contenidoPorAgregar, botonAgregarContenido);
     };
     seccionContenidos.appendChild(botonAgregarContenido);
     configuracionDeMensaje.appendChild(seccionContenidos);
-    seccionContenidos.classList.add('seccionConfiguracionDeMensaje');
+    seccionContenidos.classList.add('seccion-configuracion-de-mensaje');
 
     //seccion disparadores
     const seccionDisparadores = document.createElement('div');
@@ -745,30 +746,30 @@ class Tarjeta {
     const tituloDisparadores = document.createElement('h4');
     tituloDisparadores.textContent = 'Disparadores';
     seccionDisparadores.appendChild(tituloDisparadores);
-    seccionDisparadores.appendChild(this.crearDisparadoresDeMensaje());
+    seccionDisparadores.appendChild(this.crearSeccionAgregable("disparadores"));
     const botonAgregarDisparadores = document.createElement('button');
     botonAgregarDisparadores.textContent = 'Agregar Disparadores';
     botonAgregarDisparadores.onclick = function() {
-        const disparadoresPorAgregar = self.crearDisparadoresDeMensaje();
+        const disparadoresPorAgregar = self.crearSeccionAgregable("disparadores");
         disparadoresPorAgregar.classList.add('deslizarse-arriba-adentro');
         seccionDisparadores.insertBefore(disparadoresPorAgregar, botonAgregarDisparadores);
     };
     seccionDisparadores.appendChild(botonAgregarDisparadores);
     configuracionDeMensaje.appendChild(seccionDisparadores);
-    seccionDisparadores.classList.add('seccionConfiguracionDeMensaje');
+    seccionDisparadores.classList.add('seccion-configuracion-de-mensaje');
 
     //seccion modificadores
     const seccionModificadores = document.createElement('div');
     seccionModificadores.classList.add('modificadores');
-    seccionModificadores.classList.add('seccionConfiguracionDeMensaje');
+    seccionModificadores.classList.add('seccion-configuracion-de-mensaje');
     const tituloModificadores = document.createElement('h4');
     tituloModificadores.textContent = 'Modificadores';
     seccionModificadores.appendChild(tituloModificadores);
-    seccionModificadores.appendChild(this.crearModificadorDeMensaje());
+    seccionModificadores.appendChild(this.crearSeccionAgregable("modificador"));
     const botonAgregarModificador = document.createElement('button');
     botonAgregarModificador.textContent = 'Agregar Modificador';
     botonAgregarModificador.onclick = function() {
-      const modificadorPorAgregar = self.crearModificadorDeMensaje()
+      const modificadorPorAgregar = self.crearSeccionAgregable("modificador")
       modificadorPorAgregar.classList.add('deslizarse-arriba-adentro');
       seccionModificadores.insertBefore(modificadorPorAgregar, botonAgregarModificador);
     };
@@ -776,35 +777,41 @@ class Tarjeta {
     configuracionDeMensaje.appendChild(seccionModificadores);
 
     // Función para agregar listeners a las secciones agregables
-    function agregarListeners(seccionAgregable) {
-        seccionAgregable.addEventListener("mousemove", (e) => {
-            self.efectoMovimientoElemento(e, seccionAgregable); 
-            seccionAgregable.classList.remove('deslizarse-arriba-adentro');
+    function agregarListenersASeccionAgregable(seccionAgregable) {
+        seccionAgregable.addEventListener("mousemove", (evento) => {
+            self.efectoReflejoElemento(evento, seccionAgregable); 
         });
         seccionAgregable.addEventListener("mouseleave", () => {
-            self.efectoMovimientoElementoDesactivar(seccionAgregable); 
+            self.efectoReflejoElementoDesactivar(seccionAgregable); 
         });
 
-        seccionAgregable.addEventListener("click", (evento) =>{
-            if(evento.target === seccionAgregable){
-                self.seleccionarElementoAgregable(seccionAgregable);
+        const botonesEliminar = seccionAgregable.getElementsByClassName('eliminar-seccion');
+
+        Array.from(botonesEliminar).forEach(botonEliminar => {
+            botonEliminar.onclick = function () {
+                //seccionAgregable.classList.replace('deslizarse-arriba-adentro' ,'deslizarse-derecha-afuera');
+                seccionAgregable.classList.add('deslizarse-derecha-afuera');
+                seccionAgregable.addEventListener('animationend', () => {
+                    self.eliminarSeccionAgregable(seccionAgregable);
+                });
             }
         });
+
     }
 
-    // Agregar listeners a los elementos existentes con la clase 'contenedorSeccionAgregable'
-    const seccionesAgregablesIniciales = configuracionDeMensaje.getElementsByClassName('contenedorSeccionAgregable');
+    // Agregar listeners a los elementos existentes 
+    const seccionesAgregablesIniciales = configuracionDeMensaje.getElementsByClassName('seccion-agregable');
     Array.from(seccionesAgregablesIniciales).forEach(seccionAgregable => {
-        agregarListeners(seccionAgregable);
+        agregarListenersASeccionAgregable(seccionAgregable);
     });
 
-    // Uso de MutationObserver para observar adición de elementos con clase 'contenedorSeccionAgregable'
+    // Uso de MutationObserver para observar adición de elementos 
     const observer = new MutationObserver((mutationsList) => {
         for (let mutation of mutationsList) {
             if (mutation.type === 'childList') {
                 mutation.addedNodes.forEach(node => {
-                    if (node.nodeType === 1 && node.classList.contains('contenedorSeccionAgregable')) {
-                        agregarListeners(node);
+                    if (node.nodeType === 1 && node.classList.contains('seccion-agregable')) {
+                        agregarListenersASeccionAgregable(node);
                     }
                 });
             }
@@ -822,20 +829,59 @@ class Tarjeta {
     };
   }
   
-  crearContenidoDeMensaje(valorTextarea= 'Nuevo contenido') {
-    const contenidoAgregable = document.createElement('div');
-    contenidoAgregable.style.gap = '0px';
-    contenidoAgregable.classList.add('contenedorSeccionAgregable');
-    contenidoAgregable.style.position = "relative";
+  crearSeccionAgregable(tipoDeSeccion, valorTextAreaContenido = 'Nuevo contenido') {
+    const seccionAgregable = document.createElement('div');
+    seccionAgregable.classList.add('seccion-agregable');
+    const cabeceraSeccionAgregable = document.createElement('div');
+    cabeceraSeccionAgregable.classList.add('cabecera-seccion-agregable');
+    cabeceraSeccionAgregable.innerHTML = `
+    <button class = "eliminar-seccion">
+        <svg width="8px" height="8px" viewBox="0 0 24 24" stroke="#000000">
+            <g>
+            <path d="M0 0L24 24M24 0L0 24" stroke="var(--gris-muy-oscuro)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+            </g>
+        </svg>
+    </button>
+    `
+    ;
+    const camposSeccionAgregable = document.createElement('div');
+    camposSeccionAgregable.classList.add('campos-seccion-agregable');
+
+    switch (tipoDeSeccion) {
+      case 'contenido':
+        cabeceraSeccionAgregable.style.backgroundColor = 'var(--contenidos-oscuro)';
+        seccionAgregable.appendChild(cabeceraSeccionAgregable);
+        seccionAgregable.appendChild(this.crearContenidoDeMensaje(camposSeccionAgregable, valorTextAreaContenido));
+        return seccionAgregable;
+      case 'disparadores':
+        cabeceraSeccionAgregable.style.backgroundColor = 'var(--disparadores-oscuro)';
+        seccionAgregable.appendChild(cabeceraSeccionAgregable);
+        seccionAgregable.appendChild(this.crearDisparadoresDeMensaje(camposSeccionAgregable));
+        return seccionAgregable;
+      case 'modificador':
+        cabeceraSeccionAgregable.style.backgroundColor = 'var(--modificadores-oscuro)';
+        seccionAgregable.appendChild(cabeceraSeccionAgregable);
+        seccionAgregable.appendChild(this.crearModificadorDeMensaje(camposSeccionAgregable));
+        return seccionAgregable;
+      default:
+        throw new Error('Tipo de sección no válido');
+    }
+
+  }
+
+  crearContenidoDeMensaje(seccionAgregable, valorTextarea = 'Nuevo contenido') {
+    //seccionAgregable.style.position = "relative";
 
     const cajaDeTexto = document.createElement('div');
     cajaDeTexto.style.position= 'relative';
+    cajaDeTexto.style.display = 'flex';
 
     const textarea = document.createElement('textarea');
     textarea.value = valorTextarea;
-    textarea.rows = 3;
+    textarea.rows = 4;
     textarea.style.paddingRight = '30px';
-    contenidoAgregable.appendChild(textarea);
+    textarea.style.width = '-webkit-fill-available';
+    cajaDeTexto.appendChild(textarea);
 
     const botonEmojis = document.createElement('button');
     botonEmojis.style.backgroundColor = 'transparent';
@@ -843,32 +889,40 @@ class Tarjeta {
     botonEmojis.style.right = '0';
     botonEmojis.style.bottom = '0';
     botonEmojis.style.display = 'flex';
-    //botonEmojis.style.border = 'none'; // Elimina el borde del botón
-    //botonEmojis.style.padding = '0';  // Elimina el padding del botón
 
     botonEmojis.innerHTML = `
-        <svg width="24px" height="24px" fill="none" >
-            <g>
-                <path d="M8.4 13.8C8.4 13.8 9.75 15.6 12 15.6C14.25 15.6 15.6 13.8 15.6 13.8M14.7 9.3H14.709M9.3 9.3H9.309M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM15.15 9.3C15.15 9.54853 14.9485 9.75 14.7 9.75C14.4515 9.75 14.25 9.54853 14.25 9.3C14.25 9.05147 14.4515 8.85 14.7 8.85C14.9485 8.85 15.15 9.05147 15.15 9.3ZM9.75 9.3C9.75 9.54853 9.54853 9.75 9.3 9.75C9.05147 9.75 8.85 9.54853 8.85 9.3C8.85 9.05147 9.05147 8.85 9.3 8.85C9.54853 8.85 9.75 9.05147 9.75 9.3Z" stroke="var(--color-contenidos)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-            </g>
+        <svg width="18px" height="18px" viewBox="0 0 24 24" fill="none">
+            <path d="M8.4 13.8C8.4 13.8 9.75 15.6 12 15.6C14.25 15.6 15.6 13.8 15.6 13.8M14.7 9.3H14.709M9.3 9.3H9.309M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM15.15 9.3C15.15 9.54853 14.9485 9.75 14.7 9.75C14.4515 9.75 14.25 9.54853 14.25 9.3C14.25 9.05147 14.4515 8.85 14.7 8.85C14.9485 8.85 15.15 9.05147 15.15 9.3ZM9.75 9.3C9.75 9.54853 9.54853 9.75 9.3 9.75C9.05147 9.75 8.85 9.54853 8.85 9.3C8.85 9.05147 9.05147 8.85 9.3 8.85C9.54853 8.85 9.75 9.05147 9.75 9.3Z" stroke="var(--contenidos-oscuro)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
         </svg>
     `;
 
-    const emojiPicker = document.createElement('emoji-picker');
+    //const emojiPicker = document.createElement('emoji-picker');
+    const pickerOptions = { onEmojiSelect: function(evento) {
+        const emoji = evento.native;
+        textarea.value += emoji;
+        //emojiPicker.style.display = 'none';
+        console.log(evento);
+    }}
+    const emojiPicker = new EmojiMart.Picker(pickerOptions)
+  
     emojiPicker.style.position = 'absolute';
     emojiPicker.style.display = 'none';
-    emojiPicker.style.zIndex = 1001;
+    //emojiPicker.style.zIndex = 1001;
     emojiPicker.classList.add('emoji-picker');
+    emojiPicker.setAttribute('emojiSize', '18');
+    emojiPicker.setAttribute('emojiButtonSize', '32');
+    emojiPicker.setAttribute('perLine', '8');
+    emojiPicker.setAttribute('set', 'apple');
+    emojiPicker.setAttribute('skinTonePosition', 'search');
+    emojiPicker.setAttribute('theme', 'light');
+    emojiPicker.setAttribute('icons', 'outline');
+    emojiPicker.setAttribute('locale', 'es');
+    emojiPicker.setAttribute('previewPosition', 'none');
+
 
     botonEmojis.addEventListener('click', function(event) {
         event.stopPropagation(); // Evita que el evento de clic se propague
-        emojiPicker.style.display = emojiPicker.style.display === 'none' ? 'block' : 'none';
-    });
-
-    emojiPicker.addEventListener('emoji-click', function(event) {
-        const emoji = event.detail.unicode;
-        textarea.value += emoji;
-        emojiPicker.style.display = 'none';
+        emojiPicker.style.display = emojiPicker.style.display === 'none' ? 'flex' : 'none';
     });
 
     document.addEventListener('click', function(event) {
@@ -879,15 +933,12 @@ class Tarjeta {
 
     cajaDeTexto.appendChild(botonEmojis);
     cajaDeTexto.appendChild(emojiPicker);
-    contenidoAgregable.appendChild(cajaDeTexto);
+    seccionAgregable.appendChild(cajaDeTexto);
 
-    return contenidoAgregable;
-}
+    return seccionAgregable;
+  }
 
-
-  crearDisparadoresDeMensaje(){
-    const disparador = document.createElement('div');
-    disparador.classList.add('contenedorSeccionAgregable');
+  crearDisparadoresDeMensaje(seccionAgregable) {
     const tipoDisparador = document.createElement('select');
     const opcionesDisparador = ['texto', 'otra opción'];
     opcionesDisparador.forEach(opcion => {
@@ -896,7 +947,8 @@ class Tarjeta {
         opt.textContent = opcion;
         tipoDisparador.appendChild(opt);
     });
-    disparador.appendChild(tipoDisparador);
+    seccionAgregable.appendChild(tipoDisparador);
+
     const condicionDisparador = document.createElement('select');
     const opcionesCondicion = ['contiene', 'otra opción'];
     opcionesCondicion.forEach(opcion => {
@@ -905,11 +957,13 @@ class Tarjeta {
         opt.textContent = opcion;
         condicionDisparador.appendChild(opt);
     });
-    disparador.appendChild(condicionDisparador);
+    seccionAgregable.appendChild(condicionDisparador);
+
     const textoDisparador = document.createElement('input');
     textoDisparador.type = 'text';
     textoDisparador.placeholder = 'palabras clave';
-    disparador.appendChild(textoDisparador);
+    seccionAgregable.appendChild(textoDisparador);
+
     const seccionEntornoDisparador = document.createElement('div');
     seccionEntornoDisparador.classList.add('check-box-con-texto');
     const checkboxEntorno = document.createElement('input');
@@ -918,62 +972,55 @@ class Tarjeta {
     labelEntorno.textContent = 'Entorno global';
     seccionEntornoDisparador.appendChild(checkboxEntorno);
     seccionEntornoDisparador.appendChild(labelEntorno);
-    disparador.appendChild(seccionEntornoDisparador);
+    seccionAgregable.appendChild(seccionEntornoDisparador);
 
-    return disparador;
-
+    return seccionAgregable;
   }
 
-  crearModificadorDeMensaje(){
-    const modificador = document.createElement('div');
-    modificador.classList.add('contenedorSeccionAgregable');
+  crearModificadorDeMensaje(seccionAgregable) {
     const tablaModificadores = document.createElement('input');
     tablaModificadores.type = 'text';
     tablaModificadores.placeholder = 'tabla';
-    modificador.appendChild(tablaModificadores);
+    seccionAgregable.appendChild(tablaModificadores);
+
     const campoModificadores = document.createElement('input');
     campoModificadores.type = 'text';
     campoModificadores.placeholder = 'campo';
-    modificador.appendChild(campoModificadores);
+    seccionAgregable.appendChild(campoModificadores);
+
     const registroModificadores = document.createElement('input');
     registroModificadores.type = 'text';
     registroModificadores.placeholder = 'registro';
-    modificador.appendChild(registroModificadores);
+    seccionAgregable.appendChild(registroModificadores);
+
     const funcionModificadores = document.createElement('input');
     funcionModificadores.type = 'text';
     funcionModificadores.placeholder = 'función';
-    modificador.appendChild(funcionModificadores);
+    seccionAgregable.appendChild(funcionModificadores);
+
     const textoModificadores = document.createElement('textarea');
     textoModificadores.value = 'Nuevo pedido de @nombre';
     textoModificadores.rows = 3;
-    modificador.appendChild(textoModificadores);
+    seccionAgregable.appendChild(textoModificadores);
 
-    return modificador;
-
+    return seccionAgregable;
   }
 
-    efectoMovimientoElemento(evento, elemento) {
-        // obtener la posición del mouse relativa al elemento
+    efectoReflejoElemento(evento, elemento) {
         const rect = elemento.getBoundingClientRect();
         const x = evento.clientX - rect.left;
         const y = evento.clientY - rect.top;
 
-        // encontrar el medio del elemento
         const medioX = rect.width / 2;
         const medioY = rect.height / 2;
 
-        // obtener el desplazamiento desde el medio como un porcentaje
-        // y reducirlo un poco
         const maximo = 5;
         const offsetX = ((x - medioX) / medioX) * maximo;
         const offsetY = ((y - medioY) / medioY) * maximo;
 
-        // establecer la rotación
         if(Math.abs(offsetX) <= maximo && Math.abs(offsetY) <= maximo ){
-            elemento.style.setProperty("--rotacionX", -1*offsetX + "deg");
-            elemento.style.setProperty("--rotacionY", offsetY + "deg");
             elemento.style.setProperty("--anguloDeDegradado", Math.atan2(offsetY, offsetX) +(Math.PI/2) + "rad");
-            elemento.style.setProperty("--porcentaje-no-degradado", 70 + "%");
+            elemento.style.setProperty("--porcentaje-no-degradado", 20 + "%");
             const padre = elemento.parentElement;
             const clasesPadre = padre.classList;
 
@@ -987,29 +1034,17 @@ class Tarjeta {
                 elemento.style.setProperty("--color-reflejo", obtenerVersionTransparenteDeColor('--color-modificadores'));
             }
         } else {
-            this.efectoMovimientoElementoDesactivar(elemento);
+            this.efectoReflejoElementoDesactivar(elemento);
         }
     }
 
-    efectoMovimientoElementoDesactivar(elemento) {
-        elemento.style.setProperty("--rotacionX", 0 + "deg");
-        elemento.style.setProperty("--rotacionY", 0 + "deg");
+    efectoReflejoElementoDesactivar(elemento) {
         elemento.style.setProperty("--porcentaje-no-degradado", 100 + "%");
     }
 
-    seleccionarElementoAgregable(elemento){
-        const padre = elemento.parentElement;
-        const clasesPadre = padre.classList;
-
-        if(clasesPadre.contains('contenidos')){
-            elemento.style.outline = 'var(--color-contenidos) dashed 2px';
-        } else if(clasesPadre.contains('disparadores')){
-            elemento.style.outline = 'var(--color-disparadores) dashed 2px';
-        } else if(clasesPadre.contains('modificadores')){
-            elemento.style.outline = 'var(--color-modificadores) dashed 2px';
-        }
+    eliminarSeccionAgregable(seccionAgregable){
+        seccionAgregable.remove();
     }
-
 
 }
 
@@ -1073,7 +1108,7 @@ function obtenerVersionTransparenteDeColor(strColor){
     }
     
     // Convierte el color a RGBA con 10% de transparencia
-    let transparentColor = hexToRGBA(color, 0.1);
+    let transparentColor = hexToRGBA(color, 0.02);
 
     return transparentColor;    
 }
