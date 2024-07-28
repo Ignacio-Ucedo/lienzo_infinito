@@ -730,13 +730,16 @@ class Tarjeta {
 
     //seccion de contenidos
     const seccionContenidos = document.createElement('div');
-    seccionContenidos.classList.add('contenidos');
+    this.contenidos = seccionContenidos
+    seccionContenidos.id = "contenidos";
     const labelContenido = document.createElement('h4');
     labelContenido.textContent = 'Contenidos';
+    seccionContenidos.style.position = 'relative'
     seccionContenidos.appendChild(labelContenido);
     seccionContenidos.appendChild(this.crearSeccionAgregable("contenido"));
     const botonAgregarContenido = document.createElement('button');
     botonAgregarContenido.textContent = 'Agregar Contenido';
+    seccionContenidos.appendChild(botonAgregarContenido);
     botonAgregarContenido.onclick = function() {
       const contenidoPorAgregar = self.crearSeccionAgregable("contenido"); 
       contenidoPorAgregar.classList.add('deslizarse-arriba-adentro');
@@ -847,8 +850,10 @@ class Tarjeta {
   crearSeccionAgregable(tipoDeSeccion, valorTextAreaContenido = 'Nuevo contenido') {
     const seccionAgregable = document.createElement('div');
     seccionAgregable.classList.add('seccion-agregable');
+    seccionAgregable.style.zIndex = '100'
     const cabeceraSeccionAgregable = document.createElement('div');
     cabeceraSeccionAgregable.classList.add('cabecera-seccion-agregable');
+    cabeceraSeccionAgregable.style.zIndex = '100'
     cabeceraSeccionAgregable.innerHTML = `
     <button class = "eliminar-seccion">
         <svg width="8px" height="8px" viewBox="0 0 24 24" stroke="#000000">
@@ -865,6 +870,7 @@ class Tarjeta {
     switch (tipoDeSeccion) {
       case 'contenido':
         cabeceraSeccionAgregable.style.backgroundColor = 'var(--contenidos-oscuro)';
+        seccionAgregable.style.zIndex = '110';
         seccionAgregable.appendChild(cabeceraSeccionAgregable);
         seccionAgregable.appendChild(this.crearContenidoDeMensaje(camposSeccionAgregable, valorTextAreaContenido));
         return seccionAgregable;
@@ -889,6 +895,7 @@ class Tarjeta {
 
     const cajaDeTexto = document.createElement('div');
     cajaDeTexto.style.position= 'relative';
+    cajaDeTexto.style.zIndex = '100'
     cajaDeTexto.style.display = 'flex';
 
     const textarea = document.createElement('textarea');
@@ -950,8 +957,11 @@ class Tarjeta {
         }
     });
 
+    this.contenidos.appendChild(emojiPicker);
+ 
     cajaDeTexto.appendChild(botonEmojis);
-    cajaDeTexto.appendChild(emojiPicker);
+   
+    
     seccionAgregable.appendChild(cajaDeTexto);
 
     return seccionAgregable;
@@ -1162,7 +1172,7 @@ function obtenerVersionTransparenteDeColor(strColor){
 }
 const lienzoInfinito = new LienzoInfinito();
 
-document.addEventListener("contextmenu", (e) => e.preventDefault(), false);
+//document.addEventListener("contextmenu", (e) => e.preventDefault(), false);
 document.getElementById("agregar-tarjeta").addEventListener("click", () => lienzoInfinito.agregarTarjeta(obtenerEnteroAleatorio(100, 300), obtenerEnteroAleatorio(100, 300), "Hola"));
 agregarToolTip(document.getElementById("agregar-tarjeta"), "Agregar tarjeta (n)");
 document.addEventListener('keyup', function(event) {
