@@ -629,20 +629,26 @@ class GestorTarjetas {
 
 
   eliminarTarjeta(tarjeta) {
-    console.log(this.flechas);
     this.tarjetas = this.tarjetas.filter(t => t !== tarjeta);
-    this.conexiones.delete(tarjeta);
 
-    // eliminar todas las flechas asociadas a la tarjeta
-    this.flechas = this.flechas.filter(flecha => {
-        return flecha.origen.tarjeta !== tarjeta && flecha.destino.tarjeta !== tarjeta;
-    });
+    const conexionesTarjetaAEliminar = this.conexiones.get(tarjeta);
+    if (conexionesTarjetaAEliminar) {
+        const flechasAEliminar = new Set();
+        
+        // Recolectar todas las flechas a eliminar
+        for (let [flechaAEliminar, _] of conexionesTarjetaAEliminar) {
+            flechasAEliminar.add(flechaAEliminar);
+        }
+    
+        // Filtrar las flechas para eliminar las asociadas a la tarjeta
+        this.flechas = this.flechas.filter(flecha => !flechasAEliminar.has(flecha));
+    }
+    this.conexiones.delete(tarjeta);
 
     // eliminar la tarjeta de las conexiones de otras tarjetas
     for (let [tarjetaConectada, conexiones] of this.conexiones.entries()) {
         this.conexiones.set(tarjetaConectada, conexiones.filter(conexion => conexion[0] !== tarjeta));
     }
-    console.log(this.flechas);
   }
 
   acomodarTarjetaAlFinal(tarjeta) {
@@ -735,6 +741,9 @@ class Tarjeta {
       const contenidoPorAgregar = self.crearSeccionAgregable("contenido"); 
       contenidoPorAgregar.classList.add('deslizarse-arriba-adentro');
       seccionContenidos.insertBefore(contenidoPorAgregar, botonAgregarContenido);
+      contenidoPorAgregar.addEventListener("animationend", ()=> {
+        contenidoPorAgregar.classList.remove("deslizarse-arriba-adentro");
+      });
     };
     seccionContenidos.appendChild(botonAgregarContenido);
     configuracionDeMensaje.appendChild(seccionContenidos);
@@ -752,6 +761,9 @@ class Tarjeta {
     botonAgregarDisparadores.onclick = function() {
         const disparadoresPorAgregar = self.crearSeccionAgregable("disparadores");
         disparadoresPorAgregar.classList.add('deslizarse-arriba-adentro');
+        disparadoresPorAgregar.addEventListener("animationend", ()=> {
+            disparadoresPorAgregar.classList.remove("deslizarse-arriba-adentro");
+        });
         seccionDisparadores.insertBefore(disparadoresPorAgregar, botonAgregarDisparadores);
     };
     seccionDisparadores.appendChild(botonAgregarDisparadores);
@@ -769,12 +781,16 @@ class Tarjeta {
     const botonAgregarModificador = document.createElement('button');
     botonAgregarModificador.textContent = 'Agregar Modificador';
     botonAgregarModificador.onclick = function() {
-      const modificadorPorAgregar = self.crearSeccionAgregable("modificador")
-      modificadorPorAgregar.classList.add('deslizarse-arriba-adentro');
-      seccionModificadores.insertBefore(modificadorPorAgregar, botonAgregarModificador);
+        const modificadorPorAgregar = self.crearSeccionAgregable("modificador")
+        modificadorPorAgregar.classList.add('deslizarse-arriba-adentro');
+        modificadorPorAgregar.addEventListener("animationend", ()=> {
+            modificadorPorAgregar.classList.remove("deslizarse-arriba-adentro");
+        });
+        seccionModificadores.insertBefore(modificadorPorAgregar, botonAgregarModificador);
     };
     seccionModificadores.appendChild(botonAgregarModificador);
     configuracionDeMensaje.appendChild(seccionModificadores);
+
 
     // Función para agregar listeners a las secciones agregables
     function agregarListenersASeccionAgregable(seccionAgregable) {
@@ -789,7 +805,6 @@ class Tarjeta {
 
         Array.from(botonesEliminar).forEach(botonEliminar => {
             botonEliminar.onclick = function () {
-                //seccionAgregable.classList.replace('deslizarse-arriba-adentro' ,'deslizarse-derecha-afuera');
                 seccionAgregable.classList.add('deslizarse-derecha-afuera');
                 seccionAgregable.addEventListener('animationend', () => {
                     self.eliminarSeccionAgregable(seccionAgregable);
@@ -900,28 +915,32 @@ class Tarjeta {
     const pickerOptions = { onEmojiSelect: function(evento) {
         const emoji = evento.native;
         textarea.value += emoji;
-        //emojiPicker.style.display = 'none';
-        console.log(evento);
     }}
     const emojiPicker = new EmojiMart.Picker(pickerOptions)
   
     emojiPicker.style.position = 'absolute';
     emojiPicker.style.display = 'none';
-    //emojiPicker.style.zIndex = 1001;
     emojiPicker.classList.add('emoji-picker');
     emojiPicker.setAttribute('emojiSize', '18');
     emojiPicker.setAttribute('emojiButtonSize', '32');
-    emojiPicker.setAttribute('perLine', '8');
+    emojiPicker.setAttribute('perLine', '7');
     emojiPicker.setAttribute('set', 'apple');
     emojiPicker.setAttribute('skinTonePosition', 'search');
     emojiPicker.setAttribute('theme', 'light');
     emojiPicker.setAttribute('icons', 'outline');
     emojiPicker.setAttribute('locale', 'es');
     emojiPicker.setAttribute('previewPosition', 'none');
-
+    emojiPicker.setAttribute('dynamicWidth', 'true');
+    
 
     botonEmojis.addEventListener('click', function(event) {
-        event.stopPropagation(); // Evita que el evento de clic se propague
+        event.stopPropagation(); // sino no funciona, por el textarea
+        const emojiPickers = document.getElementsByClassName('emoji-picker');
+        for(let otroEmojiPicker of emojiPickers){
+            if (otroEmojiPicker != emojiPicker){
+                otroEmojiPicker.style.display = 'none';
+            }
+        }
         emojiPicker.style.display = emojiPicker.style.display === 'none' ? 'flex' : 'none';
     });
 
